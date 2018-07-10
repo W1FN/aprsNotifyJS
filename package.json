@@ -1,0 +1,17 @@
+{
+  "name": "aprsnotifyjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "aprs-parser": "^1.0.4",
+    "js-aprs-is": "file:../../../scratch/js-aprs-is",
+    "ws": "^5.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
