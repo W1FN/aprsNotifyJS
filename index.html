@@ -1,11 +1,23 @@
 <head>
   <meta charset="UTF-8">
   <script src="./client.js"></script>
+  <style>
+   table.calls {
+     border-collapse: collapse;
+   }
+
+   table.calls td, table.calls th{
+     border: 1px solid black;
+   }
+
+   table.calls tr.timedOut {
+     background-color: red;
+   }
+  </style>
 </head>
 <body>
   <div class="wrapper">
-    <table>
+    <table class="calls">
     </table>
-    test
   </div>
 </body>

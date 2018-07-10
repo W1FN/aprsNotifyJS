@@ -10,6 +10,27 @@ Notification.requestPermission(permission => {
   }
 });
 
+function redrawTable() {
+  let table = document.querySelector('table.calls');
+  table.innerHTML =
+    `<tr><th>Callsign</th>` +
+    `<th>Last Heard</th>` +
+    `<th>Time since Last Heard</th>`;
+  for (let callsign in calls) {
+    let call = calls[callsign];
+    let nowDelta = new Date(new Date() - call.lastHeard);
+
+    let tr = table.appendChild(document.createElement('tr'));
+    if (nowDelta.getTime() > timeoutLength) {
+      tr.classList.add('timedOut');
+    }
+    tr.innerHTML =
+      `<td>${callsign}</td>` +
+      `<td>${call.lastHeard.toLocaleTimeString('en-GB')}</td>` +
+      `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>`
+    ;
+  }
+}
 
 function alertNotHeard(callsign) {
   new Notification(`${callsign} has not been heard for 20 Minutes!`,
@@ -38,5 +59,9 @@ aprsStream.onmessage = function(event) {
   calls[callsign].delta = date - calls[callsign].lastHeard;
   calls[callsign].timeout = window.setTimeout(
     alertNotHeard, timeoutLength, callsign);
+
+  redrawTable();
 };
 
+window.addEventListener("load", redrawTable);
+window.setInterval(redrawTable, 1000);
