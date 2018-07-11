@@ -1,4 +1,4 @@
-let calls = {};
+let stations = {};
 
 let messages = [];
 
@@ -11,14 +11,14 @@ Notification.requestPermission(permission => {
 });
 
 function redrawTable() {
-  let table = document.querySelector('table.calls');
+  let table = document.querySelector('table.stations');
   table.innerHTML =
     `<tr><th>Callsign</th>` +
     `<th>Last Heard</th>` +
     `<th>Time since Last Heard</th>`;
-  for (let callsign in calls) {
-    let call = calls[callsign];
-    let nowDelta = new Date(new Date() - call.lastHeard);
+  for (let callsign in stations) {
+    let station = stations[callsign];
+    let nowDelta = new Date(new Date() - station.lastHeard);
 
     let tr = table.appendChild(document.createElement('tr'));
     if (nowDelta.getTime() > timeoutLength) {
@@ -26,15 +26,14 @@ function redrawTable() {
     }
     tr.innerHTML =
       `<td>${callsign}</td>` +
-      `<td>${call.lastHeard.toLocaleTimeString('en-GB')}</td>` +
-      `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>`
-    ;
+      `<td>${station.lastHeard.toLocaleTimeString('en-GB')}</td>` +
+      `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>`;
   }
 }
 
 function alertNotHeard(callsign) {
   new Notification(`${callsign} has not been heard for 20 Minutes!`,
-                   {body: `Last Heard: ${calls[callsign].lastHeard.toLocaleTimeString('en-GB')}`});
+                   {body: `Last Heard: ${stations[callsign].lastHeard.toLocaleTimeString('en-GB')}`});
 }
 
 let aprsStream = new WebSocket("ws://localhost:1234");
@@ -46,18 +45,18 @@ aprsStream.onmessage = function(event) {
   console.log(message);
   messages.push(message);
 
-  if (!(callsign in calls)) {
-    calls[callsign] = {
+  if (!(callsign in stations)) {
+    stations[callsign] = {
       lastHeard: date,
     };
   }
 
   else {
-    window.clearTimeout(calls[callsign].timeout);
+    window.clearTimeout(stations[callsign].timeout);
   }
 
-  calls[callsign].delta = date - calls[callsign].lastHeard;
-  calls[callsign].timeout = window.setTimeout(
+  stations[callsign].delta = date - stations[callsign].lastHeard;
+  stations[callsign].timeout = window.setTimeout(
     alertNotHeard, timeoutLength, callsign);
 
   redrawTable();
