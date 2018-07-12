@@ -5,11 +5,21 @@ let messages = [];
 const timeoutLength = 20 * 60 * 1000; // 20 Minutes
 const lowVoltage = 11.9;
 
-Notification.requestPermission(permission => {
-  if (permission === "granted") {
-    new Notification("Test notification", {body: "whatever"});
-  }
-});
+if (Notification.permission !== "granted") {
+  Notification.requestPermission(permission => {
+    if (permission === "granted") {
+      new Notification("Test notification", {body: "whatever"});
+    }
+  });
+}
+
+function prettyDuration(duration) {
+  let date = new Date(timeoutLength);
+  return date.getUTCHours() > 0 ? date.getUTCHours() + " Hours": "" +
+      date.getUTCMinutes() > 0 ? date.getUTCMinutes() + " Minutes": "" +
+      date.getUTCSeconds() > 0 ? date.getUTCSeconds() + " Seconds": "" +
+      date.getUTCMilliseconds() > 0 ? date.getUTCMilliseconds() + " Milliseconds" : "";
+}
 
 function redrawTable() {
   let table = document.querySelector('table.stations');
@@ -40,14 +50,18 @@ function redrawTable() {
   }
 }
 
+function notify(title, body) {
+  return new Notification(title, {body: body, requireInteraction: true});
+}
+
 function alertNotHeard(callsign) {
-  new Notification(`${callsign} has not been heard for 20 Minutes!`,
-                   {body: `Last Heard: ${stations[callsign].lastHeard.toLocaleTimeString('en-GB')}`});
+  notify(`${callsign} has not been heard for ${prettyDuration(timeoutLength)}!`,
+         `Last Heard: ${stations[callsign].lastHeard.toLocaleTimeString('en-GB')}`);
 }
 
 function alertVoltage(callsign) {
-  new Notification(`${callsign}'s battery has dropepd below ${lowVoltage}V`,
-                   {body: `Voltage: ${stations[callsign].lastVoltage}`});
+  notify(`${callsign}'s battery has dropepd below ${lowVoltage}V`,
+         `Voltage: ${stations[callsign].lastVoltage}`);
 }
 
 let aprsStream = new WebSocket("ws://localhost:1234");
