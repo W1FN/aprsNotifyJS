@@ -60,15 +60,13 @@ aprsStream.onmessage = function(event) {
   messages.push(message);
 
   if (!(callsign in stations)) {
-    stations[callsign] = {
-      lastHeard: date,
-    };
+    stations[callsign] = {};
   }
 
   else {
     window.clearTimeout(stations[callsign].timeout);
   }
-
+  stations[callsign].lastHeard = date;
   stations[callsign].delta = date - stations[callsign].lastHeard;
   stations[callsign].timeout = window.setTimeout(
     alertNotHeard, timeoutLength, callsign);
