@@ -5,8 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "aprs-parser": "^1.0.4",
-    "js-aprs-is": "file:../../../scratch/js-aprs-is",
-    "ws": "^5.2.1"
+    "ws": "^5.2.2"
   },
   "devDependencies": {},
   "scripts": {
