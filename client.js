@@ -20,7 +20,11 @@ const trackedStations = {
   "KC1GDW-13": "Coordinator",
   "WB1BRE-12": "EMS",
   "KC1GDW-11": "Bike Tech",
-  "KC1GDW-14": "Something (panel van thing)"
+  "KC1GDW-14": "Something (panel van thing)",
+
+  // People trackers
+  "W1HS-??": "",
+  "W1HS-??": ""
 };
 
 const timeoutLength = 20 * 60 * 1000; // 20 Minutes
