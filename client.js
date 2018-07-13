@@ -99,7 +99,7 @@ let aprsStream = new WebSocket("wss://adamgoldsmith.name/APRSws");
 aprsStream.onmessage = function(event) {
   let message = JSON.parse(event.data);
   let callsign = `${message.from.call}-${message.from.ssid || 0}`;
-  let date = new Date(message.recieved);
+  let date = new Date(); // TODO: could remove "message.recieved" from server
 
   console.log(message);
   messages.push(message);
