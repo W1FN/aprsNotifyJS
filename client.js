@@ -27,7 +27,7 @@ const trackedStations = {
   "W1HS-??": ""
 };
 
-const timeoutLength = 20 * 60 * 1000; // 20 Minutes
+const timeoutLength = 10 * 60 * 1000; // 10 Minutes
 const lowVoltage = 11.9;
 
 
