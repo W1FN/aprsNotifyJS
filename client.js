@@ -65,6 +65,7 @@ function redrawTable() {
     let nowDelta = new Date(new Date() - station.lastHeard);
 
     let tr = table.appendChild(document.createElement('tr'));
+    // TODO: should be set by same thing that sends alert
     if (nowDelta.getTime() > timeoutLength) {
       tr.classList.add('timedOut');
     }
