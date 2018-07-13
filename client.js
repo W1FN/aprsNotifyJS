@@ -1,8 +1,4 @@
-let stations = {};
-
-let messages = [];
-
-const timeoutLength = 20 * 60 * 1000; // 20 Minutes
+// null here means just use the original callsign
 const trackedStations = {
   // Digis/iGates
   "W1FN-1": null,
@@ -27,7 +23,14 @@ const trackedStations = {
   "KC1GDW-14": "Something (panel van thing)"
 };
 
+const timeoutLength = 20 * 60 * 1000; // 20 Minutes
 const lowVoltage = 11.9;
+
+
+///////// End of Config /////////
+
+let stations = {};
+let messages = [];
 
 if (Notification.permission !== "granted") {
   Notification.requestPermission(permission => {
