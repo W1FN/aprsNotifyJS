@@ -16,7 +16,7 @@ wss.broadcast = function(data) {
 
 client.connect(
   14580, "rotate.aprs2.net",
-  () => client.write("user KC1GDW pass -1 filter r/43.52/-72.11/50\r\n"));
+  () => client.write("user KC1GDW pass -1 filter r/43.90/-72.15/75\r\n"));
 
 client.on('data', function(data) {
   let str = data.toString('utf8').replace(/^\s+|\s+$/g, "");
