@@ -3,6 +3,30 @@ let stations = {};
 let messages = [];
 
 const timeoutLength = 20 * 60 * 1000; // 20 Minutes
+const trackedStations = {
+  // Digis/iGates
+  "W1FN-1": null,
+  "W1FN-3": null,
+  "W1FN-5": null,
+  "W1FN-6": null,
+  "W1FN-7": null,
+  "W1FN-8": null,
+  "W1FN-9": null,
+  "W1FN-10": null,
+  "N1GMC-1": null,
+  "N1GMC-2": null,
+
+  // Vehicles
+  "KC1GDW-6": "Rover 1",
+  "K1EHZ-9": "Rover 2",
+  "N0JSR-9": "Rover 3",
+  "W1KUA-9": "Manager",
+  "KC1GDW-13": "Coordinator",
+  "WB1BRE-12": "EMS",
+  "KC1GDW-11": "Bike Tech",
+  "KC1GDW-14": "Something (panel van thing)"
+};
+
 const lowVoltage = 11.9;
 
 if (Notification.permission !== "granted") {
@@ -11,6 +35,13 @@ if (Notification.permission !== "granted") {
       new Notification("Test notification", {body: "whatever"});
     }
   });
+}
+
+function getTactical(callsign) {
+  if (trackedStations[callsign])
+    return `${trackedStations[callsign]} [${callsign}]`;
+  else
+    return callsign;
 }
 
 function prettyDuration(duration) {
@@ -41,7 +72,7 @@ function redrawTable() {
       tr.classList.add('lowVoltage');
     }
     tr.innerHTML =
-      `<td>${callsign}</td>` +
+      `<td>${getTactical(callsign)}</td>` +
       `<td>${station.lastHeard.toLocaleTimeString('en-GB')}</td>` +
       `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>` +
       `<td>${station.lastVoltage||''}</td>` +
@@ -55,12 +86,12 @@ function notify(title, body) {
 }
 
 function alertNotHeard(callsign) {
-  notify(`${callsign} has not been heard for ${prettyDuration(timeoutLength)}!`,
+  notify(`${getTactical(callsign)} has not been heard for ${prettyDuration(timeoutLength)}!`,
          `Last Heard: ${stations[callsign].lastHeard.toLocaleTimeString('en-GB')}`);
 }
 
 function alertVoltage(callsign) {
-  notify(`${callsign}'s battery has dropepd below ${lowVoltage}V`,
+  notify(`${getTactical(callsign)}'s battery has dropepd below ${lowVoltage}V`,
          `Voltage: ${stations[callsign].lastVoltage}`);
 }
 
@@ -73,28 +104,32 @@ aprsStream.onmessage = function(event) {
   console.log(message);
   messages.push(message);
 
-  if (!(callsign in stations)) {
-    stations[callsign] = {};
-  }
+  // TODO: hacky filter
+  if (callsign in trackedStations) {
 
-  else {
-    window.clearTimeout(stations[callsign].timeout);
-  }
-  stations[callsign].lastHeard = date;
-  stations[callsign].delta = date - stations[callsign].lastHeard;
-  stations[callsign].timeout = window.setTimeout(
-    alertNotHeard, timeoutLength, callsign);
-
-  if ('data' in message && 'analog' in message.data) {
-    stations[callsign].lastVoltage = message.data.analog[0] / 10;
-    stations[callsign].lastTemperature = message.data.analog[1];
-
-    if (stations[callsign].lastVoltage <= lowVoltage) {
-      alertVoltage(callsign);
+    if (!(callsign in stations)) {
+      stations[callsign] = {};
     }
-  }
+    else {
+      window.clearTimeout(stations[callsign].timeout);
+    }
 
-  redrawTable();
+    stations[callsign].lastHeard = date;
+    stations[callsign].delta = date - stations[callsign].lastHeard;
+    stations[callsign].timeout = window.setTimeout(
+      alertNotHeard, timeoutLength, callsign);
+
+    if ('data' in message && 'analog' in message.data) {
+      stations[callsign].lastVoltage = message.data.analog[0] / 10;
+      stations[callsign].lastTemperature = message.data.analog[1];
+
+      if (stations[callsign].lastVoltage <= lowVoltage) {
+        alertVoltage(callsign);
+      }
+    }
+
+    redrawTable();
+  }
 };
 
 window.addEventListener("load", redrawTable);
