@@ -95,7 +95,7 @@ function alertVoltage(callsign) {
          `Voltage: ${stations[callsign].lastVoltage}`);
 }
 
-let aprsStream = new WebSocket("ws://localhost:1234");
+let aprsStream = new WebSocket("wss://adamgoldsmith.name/APRSws");
 aprsStream.onmessage = function(event) {
   let message = JSON.parse(event.data);
   let callsign = `${message.from.call}-${message.from.ssid || 0}`;

@@ -4,7 +4,7 @@ let aprs = require("aprs-parser");
 
 const parser = new aprs.APRSParser();
 const client = new net.Socket();
-const wss = new WebSocket.Server({port: 1234});
+const wss = new WebSocket.Server({host: "127.0.0.1", port: 1234});
 
 wss.broadcast = function(data) {
   wss.clients.forEach(client => {
