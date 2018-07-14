@@ -159,6 +159,8 @@ function handleMessage(message) {
       }
     }
 
+    localStorage.setItem("stations", JSON.stringify(stations));
+
     redrawTable();
   }
 }
@@ -178,4 +180,7 @@ function connectToStream() {
 connectToStream();
 
 window.addEventListener("load", redrawTable);
+window.addEventListener("load", () => {
+  stations = JSON.parse(localStorage.getItem("stations") || '{}');
+});
 window.setInterval(redrawTable, 1000);
