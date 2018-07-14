@@ -13,20 +13,31 @@ const trackedStations = {
   "N1GMC-2": null,
 
   // Vehicles
-  "KC1GDW-6": "Rover 1",
-  "K1EHZ-9": "Rover 2",
-  "N0JSR-9": "Rover 3",
-  "W1KUA-9": "Manager",
-  "KC1GDW-13": "Coordinator",
-  "WB1BRE-12": "EMS",
-  "KC1GDW-9": "Bike Tech",
-  "W1KUA-9": "Ride Manager",
-  "KC1GDW-14": "Something (isuzu van)",
-  "KC1GDW-11": "Supply 1 <penske van>",
-
-  // People trackers
-  "W1HS-??": "",
-  "W1HS-??": ""
+  "AE1H-8": "Trouble 2 (South)",
+  "W1LKS-9": "Recovery 3",
+  "N0JSR-9": "Rover 2-8 (VT)",
+  "N1EMF-7": "Rover 3-4",
+  "K1DSP-9": "Rover 4-5",
+  "AB1XQ-9": "Rover 5-8",
+  "KC1BOS-2": "Rover 6-7",
+  "K1EHZ-3": "Rover 7-8",
+  "KC1GDW-6": "Metric Rover",
+  "WB1BRE-10": "Recovery 1",
+  "KC1GDW-10": "Recovery 2",
+  "WB1BRE-11": "Rover 1-2 (VT)",
+  "KC1GDW-5": "Rover 2-1 (NH)",
+  "WB1BRE-9": "Rover 2-3",
+  "WB1BRE-15": "Rover 5-6",
+  "KC1GDW-8": "Rover 8-2 (NH)",
+  "WB1BRE-13": "Rover FPL",
+  "KC1GDW-12": "Shuttle 1",
+  "KC1GDW-13": "Shuttle 2",
+  "KC1GDW-14": "Supply 1",
+  "KC1GDW-11": "Supply 2",
+  "WB1BRE-14": "Supply 3",
+  "WB1BRE-8": "Trouble 1 (North)",
+  "W1HS-9": "Rover SF-1",
+  "W1KUA-9": "Safety 1"
 };
 
 const timeoutLength = 10 * 60 * 1000; // 10 Minutes
