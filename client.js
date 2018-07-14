@@ -69,25 +69,35 @@ function redrawTable() {
     `<th>Time since Last Heard</th>` +
     `<th>Last Voltage</th>` +
     `<th>Last Temperature</th>`;
-  for (let callsign in stations) {
-    let station = stations[callsign];
-    let nowDelta = new Date(new Date() - station.lastHeard);
-
+  for (let callsign in trackedStations) {
     let tr = table.appendChild(document.createElement('tr'));
-    // TODO: should be set by same thing that sends alert
-    if (nowDelta.getTime() > timeoutLength) {
-      tr.classList.add('timedOut');
+    tr.innerHTML = `<td>${getTactical(callsign)}</td>`;
+    if (!(callsign in stations)) {
+      tr.classList.add('neverHeard');
+      tr.innerHTML +=
+        '<td>Never Heard</td>' +
+        '<td>Never Heard</td>' +
+        '<td>Never Heard</td>' +
+        '<td>Never Heard</td>';
     }
-    if (station.lastVoltage < lowVoltage) {
-      tr.classList.add('lowVoltage');
-    }
-    tr.innerHTML =
-      `<td>${getTactical(callsign)}</td>` +
-      `<td>${station.lastHeard.toLocaleTimeString('en-GB')}</td>` +
-      `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>` +
-      `<td>${station.lastVoltage||''}</td>` +
-      `<td>${station.lastTemperature||''}</td>`;
 
+    else {
+      let station = stations[callsign];
+      let nowDelta = new Date(new Date() - station.lastHeard);
+
+      // TODO: should be set by same thing that sends alert
+      if (nowDelta.getTime() > timeoutLength) {
+        tr.classList.add('timedOut');
+      }
+      if (station.lastVoltage < lowVoltage) {
+        tr.classList.add('lowVoltage');
+      }
+      tr.innerHTML +=
+        `<td>${station.lastHeard.toLocaleTimeString('en-GB')}</td>` +
+        `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>` +
+        `<td>${station.lastVoltage||''}</td>` +
+        `<td>${station.lastTemperature||''}</td>`;
+    }
   }
 }
 
