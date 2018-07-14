@@ -95,7 +95,8 @@ function redrawTable() {
 
     else {
       let station = stations[callsign];
-      let nowDelta = new Date(new Date() - station.lastHeard);
+      let lastHeard = new Date(station.lastHeard);
+      let nowDelta = new Date(new Date() - lastHeard);
 
       // TODO: should be set by same thing that sends alert
       if (nowDelta.getTime() > timeoutLength) {
@@ -105,7 +106,7 @@ function redrawTable() {
         tr.classList.add('lowVoltage');
       }
       tr.innerHTML +=
-        `<td>${station.lastHeard.toLocaleTimeString('en-GB')}</td>` +
+        `<td>${lastHeard.toLocaleTimeString('en-GB')}</td>` +
         `<td>${nowDelta.toLocaleTimeString('en-GB', {timeZone: "UTC"})}</td>` +
         `<td>${station.lastVoltage||''}</td>` +
         `<td>${station.lastTemperature||''}</td>`;
@@ -119,7 +120,7 @@ function notify(title, body) {
 
 function alertNotHeard(callsign) {
   notify(`${getTactical(callsign)} has not been heard for ${prettyDuration(timeoutLength)}!`,
-         `Last Heard: ${stations[callsign].lastHeard.toLocaleTimeString('en-GB')}`);
+         `Last Heard: ${new Date(stations[callsign].lastHeard).toLocaleTimeString('en-GB')}`);
 }
 
 function alertVoltage(callsign) {
@@ -144,7 +145,7 @@ function handleMessage(message) {
       window.clearTimeout(stations[callsign].timeout);
     }
 
-    stations[callsign].lastHeard = date;
+    stations[callsign].lastHeard = date.getTime();
     stations[callsign].delta = date - stations[callsign].lastHeard;
     stations[callsign].timeout = window.setTimeout(
       alertNotHeard, timeoutLength, callsign);
