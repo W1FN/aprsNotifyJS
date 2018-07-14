@@ -37,6 +37,7 @@ const lowVoltage = 11.9;
 
 let stations = {};
 let messages = [];
+let aprsStream;
 
 if (Notification.permission !== "granted") {
   Notification.requestPermission(permission => {
@@ -115,9 +116,7 @@ function alertVoltage(callsign) {
          `Voltage: ${stations[callsign].lastVoltage}`);
 }
 
-let aprsStream = new WebSocket("wss://adamgoldsmith.name/APRSws");
-aprsStream.onmessage = function(event) {
-  let message = JSON.parse(event.data);
+function handleMessage(message) {
   let callsign = `${message.from.call}-${message.from.ssid || 0}`;
   let date = new Date(); // TODO: could remove "message.recieved" from server
 
@@ -150,7 +149,21 @@ aprsStream.onmessage = function(event) {
 
     redrawTable();
   }
-};
+}
+
+function connectToStream() {
+  aprsStream = new WebSocket("wss://adamgoldsmith.name/APRSws");
+  aprsStream.onclose = () => {
+    // Try to reconnect every 5 seconds
+    let interval = window.setInterval(() => {
+      window.clearInterval(interval);
+      connectToStream();
+    }, 5000);
+  };
+  aprsStream.onmessage = event => handleMessage(JSON.parse(event.data));
+}
+
+connectToStream();
 
 window.addEventListener("load", redrawTable);
 window.setInterval(redrawTable, 1000);
