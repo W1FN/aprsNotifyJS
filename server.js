@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
-let net = require('net');
-let aprs = require("aprs-parser");
+const net = require('net');
+const aprs = require("aprs-parser");
+const fs = require('fs');
 
 const parser = new aprs.APRSParser();
 const client = new net.Socket();
@@ -27,8 +28,11 @@ client.on('data', function(data) {
     if (!packet.startsWith('#')) { // ignore comments
       let message = parser.parse(packet);
       let date = new Date();
+      let datestamp = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
       message.recieved = date;
       console.log(message);
+      fs.appendFile("log" + datestamp + ".json", JSON.stringify(message) + ",\n",
+                    err => {if (err) throw err;});
       wss.broadcast(JSON.stringify(message));
     }
   });
