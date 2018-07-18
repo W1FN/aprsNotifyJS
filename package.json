@@ -2,15 +2,27 @@
   "name": "aprsnotifyjs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "private": true,
   "dependencies": {
     "aprs-parser": "^1.0.4",
     "ws": "^5.2.2"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "devDependencies": {
+    "webpack": "^4.16.1",
+    "webpack-cli": "^3.0.8",
+    "webpack-serve": "^2.0.2"
   },
-  "author": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "monkeyPatch": "sed -i '8s|  APRSIS|  //APRSIS|' node_modules/aprs-parser/lib/index.js",
+    "serve": "node src/server.js",
+
+    "prestart": "npm run monkeyPatch",
+    "start": "node_modules/.bin/webpack-serve --content src",
+
+    "prebuild": "npm run monkeyPatch",
+    "build": "NODE_ENV=production node node_modules/.bin/webpack && cp src/index.html dist/index.html"
+  },
+  "author": "Adam Goldsmith <contact@adamgoldsmith.name>",
   "license": "ISC"
 }

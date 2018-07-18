@@ -1,3 +1,5 @@
+const aprs = require('aprs-parser');
+
 // null here means just use the original callsign
 const trackedStations = {
   // Digis/iGates
@@ -46,9 +48,10 @@ const lowVoltage = 11.9;
 
 ///////// End of Config /////////
 
-let stations = {};
-let messages = [];
+window.stations = {};
+window.messages = [];
 let aprsStream;
+let parser = new aprs.APRSParser();
 
 if (Notification.permission !== "granted") {
   Notification.requestPermission(permission => {
@@ -128,9 +131,10 @@ function alertVoltage(callsign) {
          `Voltage: ${stations[callsign].lastVoltage}`);
 }
 
-function handleMessage(message) {
-  let callsign = `${message.from.call}-${message.from.ssid || 0}`;
-  let date = new Date(); // TODO: could remove "message.recieved" from server
+function handleMessage(packet) {
+  let message = parser.parse(packet[1]);
+  let callsign = message.from.toString();
+  let date = new Date(); // TODO: use data[0] instead
 
   console.log(message);
   messages.push(message);
@@ -166,7 +170,7 @@ function handleMessage(message) {
 }
 
 function connectToStream() {
-  aprsStream = new WebSocket("wss://adamgoldsmith.name/APRSws");
+  aprsStream = new WebSocket("ws://localhost:1234");
   aprsStream.onclose = () => {
     // Try to reconnect every 5 seconds
     let interval = window.setInterval(() => {
