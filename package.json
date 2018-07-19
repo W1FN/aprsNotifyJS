@@ -5,23 +5,20 @@
   "private": true,
   "dependencies": {
     "aprs-parser": "^1.0.4",
+    "ol": "^5.0.3",
     "ws": "^5.2.2"
   },
   "devDependencies": {
-    "webpack": "^4.16.1",
-    "webpack-cli": "^3.0.8",
-    "webpack-serve": "^2.0.2"
+    "parcel": "^1.9.7"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "monkeyPatch": "sed -i '8s|  APRSIS|  //APRSIS|' node_modules/aprs-parser/lib/index.js",
     "serve": "node src/server.js",
-
     "prestart": "npm run monkeyPatch",
-    "start": "node_modules/.bin/webpack-serve --content src",
-
+    "start": "node_modules/.bin/parcel src/index.html",
     "prebuild": "npm run monkeyPatch",
-    "build": "NODE_ENV=production node node_modules/.bin/webpack && cp src/index.html dist/index.html"
+    "build": "node_modules/.bin/parcel build src/index.html"
   },
   "author": "Adam Goldsmith <contact@adamgoldsmith.name>",
   "license": "ISC"
