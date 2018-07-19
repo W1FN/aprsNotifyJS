@@ -15,18 +15,12 @@ import {APRSParser} from 'aprs-parser';
 
 import icon from "./arrow.png";
 
-let parser = new APRSParser();
-
 let tile_layer = new TileLayer({source: new OSM()});
-let vector_layer = new VectorLayer({
-  source: new VectorSource()
-});
 
 let map = new olMap({
   target: 'map',
   layers: [
-    tile_layer,
-    vector_layer
+    tile_layer
   ],
   view: new View({
     center: fromLonLat([-72.15, 43.90]),
@@ -79,7 +73,11 @@ function pathStyle(feature) {
 }
 
 function plotPaths(packets) {
+  let vector_layer = new VectorLayer({source: new VectorSource()});
+  map.addLayer(vector_layer);
+
   packets
+    .filter(packet => packet.date > new Date("2018-07-14") && packet.date < new Date("2018-07-15"))
     // filter by callsign
     .filter(packet => (packet.from !== undefined) &&
             (packet.from.toString() === "W1HS-9"))
@@ -107,13 +105,16 @@ function plotPaths(packets) {
     });
 }
 
-let packets = packetLog.split("\n")
-    // restrict to just prouty times
-    .filter(line => {
-      let date = new Date(line.slice(0,18));
-      return date > new Date("2018-07-14") && date < new Date("2018-07-15");
-    })
-    // parse to APRS packet
-    .map(line => parser.parse(line.slice(29)));
+function parsePackets(packetLog) {
+  let parser = new APRSParser();
+  return packetLog.trim().split("\n")
+  // parse to Date and APRS packet
+    .map(line => {
+      let packet = parser.parse(line.slice(29));
+      packet.date = new Date(line.slice(0,18));
+      return packet;
+    });
+}
 
+let packets = parsePackets(packetLog);
 plotPaths(packets);
