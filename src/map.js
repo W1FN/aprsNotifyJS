@@ -9,7 +9,7 @@ import Projection from 'ol/proj/Projection';
 import {LineString, Point} from 'ol/geom';
 
 import {readFileSync} from 'fs';
-const packets = readFileSync(__dirname + '/../IS_packets.txt', 'utf-8');
+const packetLog = readFileSync(__dirname + '/../IS_packets.txt', 'utf-8');
 
 import {APRSParser} from 'aprs-parser';
 
@@ -53,54 +53,67 @@ let colorGen = {
   }
 };
 
-let lines = packets.split("\n");
-lines
-  // restrict to just prouty times
-  .filter(line => {
-    let date = new Date(line.slice(0,18));
-    return date > new Date("2018-07-14") && date < new Date("2018-07-15");
-  })
-  // parse to APRS packet
-  .map(line => parser.parse(line.slice(29)))
-  // filter by callsign
-  .filter(packet => (packet.from !== undefined) &&
-          (packet.from.toString() === "W1HS-9"))
-  // filter to just positional data
-  .filter(packet => 'data' in packet && 'latitude' in packet.data)
-  // join into Arrays of points
-  .reduce((acc, packet) => {
-    if (!acc.has(packet.from.toString())) acc.set(packet.from.toString(), []);
-    acc.get(packet.from.toString()).push([packet.data.longitude,
-                                          packet.data.latitude]);
-    return acc;
-  }, new Map())
-  // plot on map
-  .forEach((points, callsign, map) => {
-    let pathFeature = new Feature(new LineString(points));
-    let styles = [
-      new Style({stroke: new Stroke(
-        {color: 'hsl(' + colorGen.get(map.size) + ', 75%, 50%)', width: 2})})];
+function pathStyle(feature) {
+  let styles = [
+    new Style({stroke: new Stroke(
+      {color: 'hsl(' + feature.getProperties().hue + ', 75%, 50%)', width: 2}
+    )})
+  ];
 
-    pathFeature.getGeometry().forEachSegment((start, end) => {
-      let dx = end[0] - start[0];
-      let dy = end[1] - start[1];
-      let rotation = Math.atan2(dy, dx);
-      // arrows
-      styles.push(new Style({
-        geometry: new Point(end),
-        image: new Icon({
-          src: icon,
-          anchor: [0.75, 0.5],
-          rotateWithView: true,
-          rotation: -rotation
-        })
-      }));
-    });
-
-    pathFeature.setStyle(styles);
-
-    vector_layer.getSource().addFeature(pathFeature);
-    pathFeature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
-                                        tile_layer.getSource().getProjection());
+  feature.getGeometry().forEachSegment((start, end) => {
+    let dx = end[0] - start[0];
+    let dy = end[1] - start[1];
+    let rotation = Math.atan2(dy, dx);
+    // arrows
+    styles.push(new Style({
+      geometry: new Point(end),
+      image: new Icon({
+        src: icon,
+        anchor: [0.75, 0.5],
+        rotateWithView: true,
+        rotation: -rotation
+      })
+    }));
   });
+  return styles;
+}
 
+function plotPaths(packets) {
+  packets
+    // filter by callsign
+    .filter(packet => (packet.from !== undefined) &&
+            (packet.from.toString() === "W1HS-9"))
+    // filter to just positional data
+    .filter(packet => 'data' in packet && 'latitude' in packet.data)
+    // join into Arrays of points
+    .reduce((acc, packet) => {
+      if (!acc.has(packet.from.toString())) acc.set(packet.from.toString(), []);
+      acc.get(packet.from.toString()).push([packet.data.longitude,
+                                            packet.data.latitude]);
+      return acc;
+    }, new Map())
+    // plot on map
+    .forEach((points, callsign, map) => {
+      let pathFeature = new Feature({
+        geometry: new LineString(points),
+        hue: colorGen.get(map.size)
+      });
+
+      pathFeature.setStyle(pathStyle);
+
+      vector_layer.getSource().addFeature(pathFeature);
+      pathFeature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
+                                          tile_layer.getSource().getProjection());
+    });
+}
+
+let packets = packetLog.split("\n")
+    // restrict to just prouty times
+    .filter(line => {
+      let date = new Date(line.slice(0,18));
+      return date > new Date("2018-07-14") && date < new Date("2018-07-15");
+    })
+    // parse to APRS packet
+    .map(line => parser.parse(line.slice(29)));
+
+plotPaths(packets);
