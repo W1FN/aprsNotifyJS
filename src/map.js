@@ -74,7 +74,10 @@ function pathStyle(feature) {
 }
 
 function plotPaths(packets) {
-  let vector_layer = new VectorLayer({source: new VectorSource()});
+  let vector_layer = new VectorLayer({
+    source: new VectorSource(),
+    style: pathStyle
+  });
   map.addLayer(vector_layer);
 
   packets
@@ -97,8 +100,6 @@ function plotPaths(packets) {
         geometry: new LineString(points),
         hue: colorGen.get(map.size)
       });
-
-      pathFeature.setStyle(pathStyle);
 
       vector_layer.getSource().addFeature(pathFeature);
       pathFeature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
