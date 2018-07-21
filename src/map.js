@@ -1,5 +1,6 @@
 import 'ol/ol.css';
 import {Map as olMap, View} from 'ol';
+import {Control} from 'ol/control';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
 import {OSM, Vector as VectorSource} from 'ol/source';
 import Feature from 'ol/Feature';
@@ -75,6 +76,7 @@ function pathStyle(feature) {
 
 function plotPaths(packets) {
   let vector_layer = new VectorLayer({
+    title: "Station Paths",
     source: new VectorSource(),
     style: pathStyle
   });
@@ -152,6 +154,7 @@ function plotPacketPaths(packets) {
     })
   });
   let digi_layer = new VectorLayer({
+    title: "Digipeater Labels",
     zIndex: 1, // TODO: probably not the best way to do this
     source: new VectorSource(),
     style: feature => {
@@ -172,7 +175,10 @@ function plotPacketPaths(packets) {
                                         tile_layer.getSource().getProjection());
   });
 
-  let packet_path_layer = new VectorLayer({source: new VectorSource()});
+  let packet_path_layer = new VectorLayer({
+    title: "Packet Paths",
+    source: new VectorSource(),
+  });
   map.addLayer(packet_path_layer);
   packets
     .filter(packet => packet.date > new Date("2018-07-14") && packet.date < new Date("2018-07-15"))
@@ -211,6 +217,33 @@ function plotPacketPaths(packets) {
         });
     });
 }
+
+let element = document.createElement('div');
+element.className = 'layer-toggles ol-unselectable ol-control';
+function render_layer_toggles(event) {
+  event.map.getLayers().getArray()
+    .filter(layer => layer.get('title') !== undefined)
+    .forEach(layer => {
+      if (layer.toggle_element === undefined) {
+        layer.toggle_element = element.appendChild(
+          document.createElement('label'));
+
+        let checkbox = layer.toggle_element.appendChild(
+          document.createElement('input'));
+        checkbox.type = "checkbox";
+        checkbox.checked = layer.getVisible();
+        checkbox.addEventListener('change', event => {
+          layer.setVisible(event.target.checked);
+        });
+        layer.toggle_element.appendChild(
+          document.createTextNode(layer.get('title')));
+      }
+    });
+}
+let control = new Control({element: element,
+                           render: render_layer_toggles});
+
+map.addControl(control);
 
 function parsePackets(packetLog) {
   let parser = new APRSParser();
