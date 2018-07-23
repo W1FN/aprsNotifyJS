@@ -1,12 +1,11 @@
 import 'ol/ol.css';
 import {Map as olMap, View} from 'ol';
 import {Control} from 'ol/control';
-import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
+import {Group as LayerGroup, Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
 import {OSM, Vector as VectorSource} from 'ol/source';
 import Feature from 'ol/Feature';
 import {fromLonLat} from 'ol/proj';
-import {Icon, Fill, Stroke, Style, Text} from 'ol/style';
-import CircleStyle from 'ol/style/Circle';
+import {Circle as CircleStyle, Icon, Fill, Stroke, Style, Text} from 'ol/style';
 import Projection from 'ol/proj/Projection';
 import {LineString, Point} from 'ol/geom';
 
@@ -175,11 +174,9 @@ function plotPacketPaths(packets) {
                                         tile_layer.getSource().getProjection());
   });
 
-  let packet_path_layer = new VectorLayer({
-    title: "Packet Paths",
-    source: new VectorSource(),
-  });
-  map.addLayer(packet_path_layer);
+  let packet_path_layers = new LayerGroup({title: "Packet Paths"});
+  let layers_map = new Map();
+  map.addLayer(packet_path_layers);
   packets
     .filter(packet => packet.date > new Date("2018-07-14") && packet.date < new Date("2018-07-15"))
     // filter by callsign
@@ -192,13 +189,11 @@ function plotPacketPaths(packets) {
           if (digiPos.get(station) === undefined) {
             console.log(station);
           }
-          let previous;
-          if (index === 0) {
-            previous = [packet.data.longitude, packet.data.latitude];
-          }
-          else {
-            previous = digiPos.get(stations[index - 1]) || [0, 0];
-          }
+
+          // first point in path is originating station
+          let previous = (index === 0) ?
+              [packet.data.longitude, packet.data.latitude] :
+              digiPos.get(stations[index - 1]) || [0, 0];
 
           let pathFeature = new Feature(
             new LineString([previous, digiPos.get(station) || [0, 0]]));
@@ -211,7 +206,17 @@ function plotPacketPaths(packets) {
               {color: 'hsl(' + color + ', 60%, 60%)', width: 2}
             )}));
 
-          packet_path_layer.getSource().addFeature(pathFeature);
+          if (!layers_map.has(station)) {
+            layers_map.set(station, new VectorLayer({
+              title: station,
+              source: new VectorSource(),
+              renderMode: 'image',
+              features: [pathFeature]
+            }));
+            packet_path_layers.getLayers().push(layers_map.get(station));
+          }
+          layers_map.get(station).getSource().addFeature(pathFeature);
+
           pathFeature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
                                               tile_layer.getSource().getProjection());
         });
@@ -220,26 +225,52 @@ function plotPacketPaths(packets) {
 
 let element = document.createElement('div');
 element.className = 'layer-toggles ol-unselectable ol-control';
+let inner = element.appendChild(document.createElement('div'));
+
+function layer_toggle(layer, parentElement) {
+  if (layer.toggle_element === undefined) {
+    layer.toggle_element = parentElement.appendChild(
+      document.createElement('label'));
+
+    let checkbox = layer.toggle_element.appendChild(
+      document.createElement('input'));
+    checkbox.type = "checkbox";
+    checkbox.checked = layer.getVisible();
+    checkbox.addEventListener('change', event => {
+      layer.setVisible(event.target.checked);
+    });
+    layer.toggle_element.appendChild(
+      document.createTextNode(layer.get('title')));
+  }
+  return layer.toggle_element;
+}
+
 function render_layer_toggles(event) {
   event.map.getLayers().getArray()
     .filter(layer => layer.get('title') !== undefined)
     .forEach(layer => {
-      if (layer.toggle_element === undefined) {
-        layer.toggle_element = element.appendChild(
-          document.createElement('label'));
-
-        let checkbox = layer.toggle_element.appendChild(
-          document.createElement('input'));
-        checkbox.type = "checkbox";
-        checkbox.checked = layer.getVisible();
-        checkbox.addEventListener('change', event => {
-          layer.setVisible(event.target.checked);
-        });
-        layer.toggle_element.appendChild(
-          document.createTextNode(layer.get('title')));
+      console.log(layer.get('title'));
+      if (layer instanceof LayerGroup) {
+        if (layer.group_toggle === undefined) {
+          let label = layer.group_toggle = inner.appendChild(
+            document.createElement('label'));
+          let input = label.appendChild(document.createElement('input'));
+          input.type = 'checkbox';
+          input.className = "expand";
+          label.appendChild(document.createElement('span'));
+          layer_toggle(layer, label); // whole LayerGroup
+          let container = label.appendChild(document.createElement('div'));
+          container.className = 'collapsible-content';
+          layer.getLayers().forEach(
+            sublayer => layer_toggle(sublayer, container));
+        }
       }
+      else {
+        layer_toggle(layer, inner);
+    }
     });
 }
+
 let control = new Control({element: element,
                            render: render_layer_toggles});
 
