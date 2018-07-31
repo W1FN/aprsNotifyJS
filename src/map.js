@@ -14,8 +14,6 @@ const packetLog = readFileSync(__dirname + '/../IS_packets.txt', 'utf-8');
 
 import {APRSParser} from 'aprs-parser';
 
-import icon from "./arrow.png";
-
 let tile_layer = new TileLayer({source: new OSM()});
 
 let map = new olMap({
@@ -52,21 +50,6 @@ function pathStyle(feature) {
     )})
   ];
 
-  feature.getGeometry().forEachSegment((start, end) => {
-    let dx = end[0] - start[0];
-    let dy = end[1] - start[1];
-    let rotation = Math.atan2(dy, dx);
-    // arrows
-    styles.push(new Style({
-      geometry: new Point(end),
-      image: new Icon({
-        src: icon,
-        anchor: [0.75, 0.5],
-        rotateWithView: true,
-        rotation: -rotation
-      })
-    }));
-  });
   return styles;
 }
 
