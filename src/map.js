@@ -29,21 +29,18 @@ let map = new olMap({
   })
 });
 
-let colorGen = {
-  hues: null,
-  get: function (totalNum) {
-    if (this.hues === null) {
-      let mult = Math.floor(360 / totalNum);
-      this.hues = Array.from(Array(totalNum).keys())
-        .map(x => x * mult);
+class ColorGenerator {
+  constructor(count) {
+    let mult = Math.floor(360 / count);
+    this.hues = Array.from(Array(count).keys()).map(x => x * mult);
 
-      // Shuffle (this is not a great shuffle, but I don't care)
-      this.hues.forEach((current, index, arr) => {
-        let randomIndex = Math.floor(Math.random() * index);
-        [arr[index], arr[randomIndex]] =
-          [arr[randomIndex], arr[index]];
-      });
-    }
+    // Shuffle (this is not a great shuffle, but I don't care)
+    this.hues.forEach((current, index, arr) => {
+      let randomIndex = Math.floor(Math.random() * index);
+      [arr[index], arr[randomIndex]] = [arr[randomIndex], arr[index]];
+    });
+  }
+  get() {
     return this.hues.pop();
   }
 };
@@ -73,6 +70,8 @@ function pathStyle(feature) {
   return styles;
 }
 
+let colorGen;
+
 function plotPaths(packets) {
   let vector_layer = new VectorLayer({
     title: "Station Paths",
@@ -97,9 +96,10 @@ function plotPaths(packets) {
     }, new Map())
     // plot on map
     .forEach((points, callsign, map) => {
+      colorGen = colorGen || new ColorGenerator(map.size);
       let pathFeature = new Feature({
         geometry: new LineString(points),
-        hue: colorGen.get(map.size)
+        hue: colorGen.get()
       });
 
       vector_layer.getSource().addFeature(pathFeature);
@@ -131,11 +131,10 @@ function plotPacketPaths(packets) {
                            [packet.data.longitude, packet.data.latitude]),
               new Map());
 
-  // TODO: merge with ColorGenerator
-  let mult = Math.floor(360 / digiPos.size);
-  let colors = Array.from(Array(digiPos.size).keys()) .map(x => x * mult);
-  let colorMap = Array.from(digiPos.keys())
-      .reduce((acc, callsign, index) => acc.set(callsign, colors[index]), new Map());
+  let colorGen = new ColorGenerator(digiPos.size);
+  let colorMap = Array.from(digiPos.keys()).reduce(
+    (acc, callsign, index) =>
+      acc.set(callsign, colorGen.hues[index]), new Map());
 
   console.log(colorMap);
 
