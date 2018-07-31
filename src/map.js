@@ -156,7 +156,10 @@ function plotPacketPaths(packets) {
     zIndex: 1, // TODO: probably not the best way to do this
     source: new VectorSource(),
     style: feature => {
-      digi_style.getText().setText(feature.get('callsign'));
+      digi_style.setText(new Text({
+        text: feature.get('callsign'),
+        offsetY: 12
+      }));
       return digi_style;
     }
   });
