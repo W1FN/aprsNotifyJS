@@ -18,7 +18,7 @@
     "prestart": "npm run monkeyPatch",
     "start": "node_modules/.bin/parcel src/index.html",
     "prebuild": "npm run monkeyPatch",
-    "build": "node_modules/.bin/parcel build src/index.html"
+    "build": "node_modules/.bin/parcel build --public-url ./ src/index.html"
   },
   "author": "Adam Goldsmith <contact@adamgoldsmith.name>",
   "license": "ISC"
