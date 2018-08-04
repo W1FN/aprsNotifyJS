@@ -43,52 +43,45 @@ class ColorGenerator {
   }
 };
 
-function pathStyle(feature) {
-  let styles = [
-    new Style({stroke: new Stroke(
-      {color: 'hsl(' + feature.getProperties().hue + ', 75%, 50%)', width: 2}
-    )})
-  ];
-
-  return styles;
+function transformGeometry(geometry) {
+  return geometry.transform(new Projection({code: "EPSG:4326"}),
+                            tile_layer.getSource().getProjection());
 }
 
-let colorGen;
-
 function plotPaths(packets) {
-  let vector_layer = new VectorLayer({
-    title: "Station Paths",
-    source: new VectorSource(),
-    style: pathStyle
-  });
-  map.addLayer(vector_layer);
+  let path_layers = new LayerGroup({title: "Station Paths"});
+  map.addLayer(path_layers);
 
-  packets
-    .filter(packet => packet.date > new Date("2018-07-14") && packet.date < new Date("2018-07-15"))
-    // filter by callsign
-    .filter(packet => (packet.from !== undefined) &&
-            (packet.from.toString() === "W1HS-9"))
-    // filter to just positional data
-    .filter(packet => 'data' in packet && 'latitude' in packet.data)
-    // join into Arrays of points
-    .reduce((acc, packet) => {
-      if (!acc.has(packet.from.toString())) acc.set(packet.from.toString(), []);
-      acc.get(packet.from.toString()).push([packet.data.longitude,
-                                            packet.data.latitude]);
-      return acc;
-    }, new Map())
-    // plot on map
-    .forEach((points, callsign, map) => {
-      colorGen = colorGen || new ColorGenerator(map.size);
-      let pathFeature = new Feature({
-        geometry: new LineString(points),
-        hue: colorGen.get()
-      });
+  let paths = packets
+      .filter(packet => packet.date > new Date("2018-07-14") && packet.date < new Date("2018-07-15"))
+      // filter to just positional data
+      .filter(packet => 'data' in packet && 'latitude' in packet.data)
+      // join into Arrays of points
+      .reduce((acc, packet) => {
+        if (!acc.has(packet.from.toString())) acc.set(packet.from.toString(), []);
+        acc.get(packet.from.toString()).push([packet.data.longitude,
+                                              packet.data.latitude]);
+        return acc;
+      }, new Map());
 
-      vector_layer.getSource().addFeature(pathFeature);
-      pathFeature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
-                                          tile_layer.getSource().getProjection());
+  let colorGen = new ColorGenerator(paths.size);
+
+  // plot on map
+  paths.forEach((points, callsign) => {
+    let path_layer = new VectorLayer({
+      title: callsign,
+      source: new VectorSource({features: [
+        new Feature({
+          geometry: transformGeometry(new LineString(points))
+        })
+      ]}),
+      style: new Style({
+        stroke: new Stroke(
+          {color: 'hsl(' + colorGen.get() + ', 75%, 50%)', width: 2}
+        )})
     });
+    path_layers.getLayers().push(path_layer);
+  });
 }
 
 function plotPacketPaths(packets) {
