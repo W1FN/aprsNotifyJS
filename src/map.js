@@ -112,8 +112,6 @@ function plotPacketPaths(packets) {
     (acc, callsign, index) =>
       acc.set(callsign, colorGen.hues[index]), new Map());
 
-  console.log(colorMap);
-
   // plot digis
   // TODO: icons
   let digi_style = new Style({
@@ -143,13 +141,11 @@ function plotPacketPaths(packets) {
 
   digiPos.forEach((position, callsign) => {
     let feature = new Feature({
-      geometry: new Point(position),
+      geometry: transformGeometry(new Point(position)),
       callsign: callsign
     });
 
     digi_layer.getSource().addFeature(feature);
-    feature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
-                                        tile_layer.getSource().getProjection());
   });
 
   let packet_path_layers = new LayerGroup({title: "Packet Paths"});
@@ -173,14 +169,14 @@ function plotPacketPaths(packets) {
               [packet.data.longitude, packet.data.latitude] :
               digiPos.get(stations[index - 1]) || [0, 0];
 
-          let pathFeature = new Feature(
-            new LineString([previous, digiPos.get(station) || [0, 0]]));
+          let pathFeature = new Feature(transformGeometry(
+            new LineString([previous, digiPos.get(station) || [0, 0]])));
 
           // TODO: want to color per station that hears it, probably means
           // making a lot more features
           let color = colorMap.get(station);
-          pathFeature.setStyle(new Style(
-            {stroke: new Stroke(
+          pathFeature.setStyle(new Style({
+            stroke: new Stroke(
               {color: 'hsl(' + color + ', 60%, 60%)', width: 2}
             )}));
 
@@ -188,15 +184,11 @@ function plotPacketPaths(packets) {
             layers_map.set(station, new VectorLayer({
               title: station,
               source: new VectorSource(),
-              renderMode: 'image',
-              features: [pathFeature]
+              renderMode: 'image'
             }));
             packet_path_layers.getLayers().push(layers_map.get(station));
           }
           layers_map.get(station).getSource().addFeature(pathFeature);
-
-          pathFeature.getGeometry().transform(new Projection({code: "EPSG:4326"}),
-                                              tile_layer.getSource().getProjection());
         });
     });
 }
@@ -227,7 +219,6 @@ function render_layer_toggles(event) {
   event.map.getLayers().getArray()
     .filter(layer => layer.get('title') !== undefined)
     .forEach(layer => {
-      console.log(layer.get('title'));
       if (layer instanceof LayerGroup) {
         if (layer.group_toggle === undefined) {
           let label = layer.group_toggle = inner.appendChild(
