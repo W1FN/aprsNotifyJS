@@ -43,6 +43,6 @@ html, body {
 .collapsible-content {
     margin-left: 0.8em;
 }
-.collapsible-content label {
+.collapsible-content > label {
     display: block;
 }

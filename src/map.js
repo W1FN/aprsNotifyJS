@@ -210,10 +210,9 @@ function plotPacketPaths(packets) {
     });
 }
 
-function layer_toggle(layer, parentElement) {
+function layer_toggle(layer) {
   if (layer.toggle_element === undefined) {
-    layer.toggle_element = parentElement.appendChild(
-      document.createElement('label'));
+    layer.toggle_element = document.createElement('label');
 
     let checkbox = layer.toggle_element.appendChild(
       document.createElement('input'));
@@ -228,44 +227,46 @@ function layer_toggle(layer, parentElement) {
   return layer.toggle_element;
 }
 
+function layer_toggles(layer, parentElement) {
+  if (layer instanceof LayerGroup) {
+    if (layer.group_toggle === undefined) {
+      let label = layer.group_toggle = parentElement.appendChild(
+        document.createElement('label'));
+      let input = label.appendChild(document.createElement('input'));
+      input.type = 'checkbox';
+      input.className = "expand";
+      label.appendChild(document.createElement('span'));
+
+      label.appendChild(layer_toggle(layer)); // whole LayerGroup
+
+      let child_toggle_element = label.appendChild(
+        document.createElement('input'));
+      child_toggle_element.type = 'checkbox';
+      child_toggle_element.checked = true;
+      child_toggle_element.addEventListener('change', event => {
+        layer.getLayers().forEach(subLayer => {
+          subLayer.setVisible(event.target.checked);
+          subLayer.toggle_element.querySelector("input").checked =
+            event.target.checked;
+        });
+      });
+
+      let container = label.appendChild(document.createElement('div'));
+      container.className = 'collapsible-content';
+      layer.getLayers().forEach(
+        subLayer => layer_toggles(subLayer, container));
+      return label;
+    }
+  }
+  else {
+    parentElement.appendChild(layer_toggle(layer));
+  }
+}
+
 function render_layer_toggles(event, element) {
   event.map.getLayers().getArray()
     .filter(layer => layer.get('title') !== undefined)
-    .forEach(layer => {
-      if (layer instanceof LayerGroup) {
-        if (layer.group_toggle === undefined) {
-          let label = layer.group_toggle = element.appendChild(
-            document.createElement('label'));
-          let input = label.appendChild(document.createElement('input'));
-          input.type = 'checkbox';
-          input.className = "expand";
-          label.appendChild(document.createElement('span'));
-
-          layer_toggle(layer, label); // whole LayerGroup
-
-          let child_toggle_element = label.appendChild(
-            document.createElement('input'));
-          child_toggle_element.type = 'checkbox';
-          child_toggle_element.checked = true;
-          child_toggle_element.addEventListener('change', event => {
-            console.log("test");
-            layer.getLayers().forEach(subLayer => {
-              subLayer.setVisible(event.target.checked);
-              subLayer.toggle_element.querySelector("input").checked =
-                event.target.checked;
-            });
-          });
-
-          let container = label.appendChild(document.createElement('div'));
-          container.className = 'collapsible-content';
-          layer.getLayers().forEach(
-            sublayer => layer_toggle(sublayer, container));
-        }
-      }
-      else {
-        layer_toggle(layer, element);
-    }
-    });
+    .forEach(layer => layer_toggles(layer, element));
 }
 
 (function makeLayerToogleControl() {
