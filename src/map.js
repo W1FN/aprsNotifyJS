@@ -148,7 +148,13 @@ function plotPacketPaths(packets) {
   let digi_layer = new VectorLayer({
     title: "Digipeater Labels",
     zIndex: 1, // TODO: probably not the best way to do this
-    source: new VectorSource(),
+    source: new VectorSource({
+      features: Array.from(digiPos.keys()).map(callsign =>
+        new Feature({
+          geometry: transformGeometry(new Point(digiPos.get(callsign))),
+          callsign: callsign
+        })
+      )}),
     style: feature => {
       digi_style.setText(new Text({
         text: feature.get('callsign'),
@@ -158,15 +164,6 @@ function plotPacketPaths(packets) {
     }
   });
   map.addLayer(digi_layer);
-
-  digiPos.forEach((position, callsign) => {
-    let feature = new Feature({
-      geometry: transformGeometry(new Point(position)),
-      callsign: callsign
-    });
-
-    digi_layer.getSource().addFeature(feature);
-  });
 
   let packet_path_layers = new LayerGroup({title: "Packet Paths"});
   let layers_map = new Map();
