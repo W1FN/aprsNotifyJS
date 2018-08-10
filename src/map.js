@@ -227,7 +227,22 @@ function render_layer_toggles(event) {
           input.type = 'checkbox';
           input.className = "expand";
           label.appendChild(document.createElement('span'));
+
           layer_toggle(layer, label); // whole LayerGroup
+
+          let child_toggle_element = label.appendChild(
+            document.createElement('input'));
+          child_toggle_element.type = 'checkbox';
+          child_toggle_element.checked = true;
+          child_toggle_element.addEventListener('click', event => {
+            console.log("test");
+            layer.getLayers().forEach(subLayer => {
+              subLayer.setVisible(event.target.checked);
+              subLayer.toggle_element.querySelector("input").checked =
+                event.target.checked;
+            });
+          });
+
           let container = label.appendChild(document.createElement('div'));
           container.className = 'collapsible-content';
           layer.getLayers().forEach(
