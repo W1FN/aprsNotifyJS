@@ -213,10 +213,6 @@ function plotPacketPaths(packets) {
     });
 }
 
-let element = document.createElement('div');
-element.className = 'layer-toggles ol-unselectable ol-control';
-let inner = element.appendChild(document.createElement('div'));
-
 function layer_toggle(layer, parentElement) {
   if (layer.toggle_element === undefined) {
     layer.toggle_element = parentElement.appendChild(
@@ -235,13 +231,13 @@ function layer_toggle(layer, parentElement) {
   return layer.toggle_element;
 }
 
-function render_layer_toggles(event) {
+function render_layer_toggles(event, element) {
   event.map.getLayers().getArray()
     .filter(layer => layer.get('title') !== undefined)
     .forEach(layer => {
       if (layer instanceof LayerGroup) {
         if (layer.group_toggle === undefined) {
-          let label = layer.group_toggle = inner.appendChild(
+          let label = layer.group_toggle = element.appendChild(
             document.createElement('label'));
           let input = label.appendChild(document.createElement('input'));
           input.type = 'checkbox';
@@ -254,7 +250,7 @@ function render_layer_toggles(event) {
             document.createElement('input'));
           child_toggle_element.type = 'checkbox';
           child_toggle_element.checked = true;
-          child_toggle_element.addEventListener('click', event => {
+          child_toggle_element.addEventListener('change', event => {
             console.log("test");
             layer.getLayers().forEach(subLayer => {
               subLayer.setVisible(event.target.checked);
@@ -270,15 +266,22 @@ function render_layer_toggles(event) {
         }
       }
       else {
-        layer_toggle(layer, inner);
+        layer_toggle(layer, element);
     }
     });
 }
 
-let control = new Control({element: element,
-                           render: render_layer_toggles});
+(function makeLayerToogleControl() {
+  let element = document.createElement('div');
+  element.className = 'layer-toggles ol-unselectable ol-control';
+  let inner = element.appendChild(document.createElement('div'));
 
-map.addControl(control);
+  let control = new Control(
+    {element: element,
+     render: event => render_layer_toggles(event, inner)});
+  map.addControl(control);
+})();
+
 
 function parsePackets(packetLog) {
   let parser = new APRSParser();
