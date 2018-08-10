@@ -58,9 +58,9 @@ function plotPaths(packets) {
       .filter(packet => 'data' in packet && 'latitude' in packet.data)
       // join into Arrays of points
       .reduce((acc, packet) => {
-        if (!acc.has(packet.from.toString())) acc.set(packet.from.toString(), []);
-        acc.get(packet.from.toString()).push([packet.data.longitude,
-                                              packet.data.latitude]);
+        let callsign = packet.from.toString().trim();
+        if (!acc.has(callsign)) acc.set(callsign, []);
+        acc.get(callsign).push([packet.data.longitude, packet.data.latitude]);
         return acc;
       }, new Map());
 
