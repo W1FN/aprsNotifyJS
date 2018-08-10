@@ -80,7 +80,7 @@ function plotPaths(packets) {
       .reduce((acc, packet) => {
         let callsign = packet.from.toString().trim();
         if (!acc.has(callsign)) acc.set(callsign, []);
-        acc.get(callsign).push([packet.data.longitude, packet.data.latitude]);
+        acc.get(callsign).push([packet.data.longitude, packet.data.latitude, packet]);
         return acc;
       }, new Map());
 
@@ -88,19 +88,36 @@ function plotPaths(packets) {
 
   // plot on map
   paths.forEach((points, callsign) => {
+    let color = 'hsl(' + colorGen.get() + ', 75%, 50%)';
     let path_layer = new VectorLayer({
-      title: callsign,
+      title: "Path",
       source: new VectorSource({features: [
-        new Feature({
-          geometry: transformGeometry(new LineString(points))
-        })
+        new Feature({geometry: transformGeometry(new LineString(points))})
       ]}),
-      style: new Style({
-        stroke: new Stroke(
-          {color: 'hsl(' + colorGen.get() + ', 75%, 50%)', width: 2}
-        )})
+      style: new Style({stroke: new Stroke({color: color, width: 2})})
     });
-    path_layers.getLayers().push(path_layer);
+
+    let points_layer = new VectorLayer({
+      title: "Points",
+      source: new VectorSource({
+        features: points.map(point => new Feature({
+          geometry: transformGeometry(new Point(point)),
+          packet: point[3] // TODO: this seems a bit bad
+        }))
+      }),
+      style: new Style({
+        image: new CircleStyle({
+          radius: 4,
+          fill: new Fill({color: color})
+        })
+      })
+    });
+
+    let callsign_layer = new LayerGroup({
+      title: callsign,
+      layers: [path_layer, points_layer]
+    });
+    path_layers.getLayers().push(callsign_layer);
   });
 }
 
