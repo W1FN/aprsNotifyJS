@@ -3,6 +3,7 @@ import {Map as olMap, View} from 'ol';
 import {Control} from 'ol/control';
 import {Group as LayerGroup, Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
 import {OSM, Vector as VectorSource} from 'ol/source';
+import {GPX} from 'ol/format';
 import Feature from 'ol/Feature';
 import {fromLonLat} from 'ol/proj';
 import {Circle as CircleStyle, Icon, Fill, Stroke, Style, Text} from 'ol/style';
@@ -16,10 +17,29 @@ import {APRSParser} from 'aprs-parser';
 
 let tile_layer = new TileLayer({source: new OSM()});
 
+import route_data from 'gpx/*.gpx';
+
+let routes = new LayerGroup({
+  title: "Routes",
+  layers: Object.keys(route_data).map(name => new VectorLayer({
+    title: name.replace(/_/g, " "),
+    source: new VectorSource({
+      url: route_data[name],
+      format: new GPX()
+    }),
+    style: new Style({
+      stroke: new Stroke(
+        {color: 'hsl(200, 90%, 30%)', width: 5}
+      )})
+  }))
+});
+
+
 let map = new olMap({
   target: 'map',
   layers: [
-    tile_layer
+    tile_layer,
+    routes
   ],
   view: new View({
     center: fromLonLat([-72.15, 43.90]),
