@@ -3,7 +3,7 @@ const net = require('net');
 const fs = require('fs');
 
 const client = new net.Socket();
-const wss = new WebSocket.Server({host: "127.0.0.1", port: 1234});
+const wss = new WebSocket.Server({host: "127.0.0.1", port: 4321});
 
 wss.broadcast = function(data) {
   wss.clients.forEach(client => {
