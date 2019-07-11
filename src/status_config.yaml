@@ -1,6 +1,10 @@
 timeoutLength: 600000 # 10 * 60 * 1000 = 10 minutes
 lowVoltage: 11.9
 
+TACTICAL_whitelist:
+  - KC1GDW-7
+  - W1FN
+
 trackedStations:
   # Digis/iGates
   W1FN-1:

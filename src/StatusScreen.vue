@@ -10,7 +10,7 @@
       </tr>
 
       <StationRow
-        v-for="(tactical, callsign) in config.trackedStations"
+        v-for="(tactical, callsign) in trackedStations"
         :key="callsign"
         :callsign="callsign"
         :tactical="tactical"
@@ -34,12 +34,12 @@ export default {
   components: { StationRow },
   data() {
     return {
-      config: config,
       aprsStream: null,
       parser: new aprs.APRSParser(),
       messages: [],
       messagesFromStation: {},
-      now: new Date()
+      now: new Date(),
+      trackedStations: config.trackedStations
     };
   },
 
@@ -85,6 +85,20 @@ export default {
         this.messagesFromStation[callsign].push(message);
       } else {
         this.$set(this.messagesFromStation, callsign, [message]);
+      }
+
+      // message to TACTICAL setting a tactical nickname from an
+      // authorized call, so add/update it in trackedStations
+      if (
+        message.data &&
+        message.data.addressee &&
+        message.data.addressee.call === "TACTICAL" &&
+        config.TACTICAL_whitelist.includes(message.from.toString())
+      ) {
+        message.data.text.split(";").map(tac_assoc => {
+          let [call, tac] = tac_assoc.split("=", 2);
+          this.trackedStations[call] = tac;
+        });
       }
     }
   }
