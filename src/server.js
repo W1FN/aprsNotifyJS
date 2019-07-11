@@ -17,6 +17,10 @@ client.connect(14580, "rotate.aprs2.net", () =>
   client.write("user KC1GDW pass -1 filter r/43.90/-72.15/75\r\n")
 );
 
+function datestamp(date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
 client.on("data", function(data) {
   let str = data.toString("utf8").replace(/^\s+|\s+$/g, "");
   console.log(str);
@@ -26,24 +30,22 @@ client.on("data", function(data) {
     if (!packet.startsWith("#")) {
       // ignore comments
       let date = new Date();
-      let datestamp =
-        date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-      let data = [datestamp, packet];
-      console.log(data);
       fs.appendFile(
-        "log" + datestamp + ".json",
-        JSON.stringify(data) + ",\n",
+        `log${datestamp(date)}.json`,
+        JSON.stringify([date, packet]) + "\n",
         err => {
           if (err) throw err;
         }
       );
-      wss.broadcast(JSON.stringify(data));
+      wss.broadcast(JSON.stringify([date, packet]));
     }
   });
 });
 
-// wss.on('connection', ws => {
-//   let datestamp = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-//   fs.readFileSync("log" + datestamp + ".json")
-//     .toString().split('\n').forEach(line =>  ws.send(line));
-// });
+wss.on("connection", ws => {
+  let date = new Date();
+  fs.readFileSync(`log${datestamp(date)}.json`)
+    .toString()
+    .split("\n")
+    .forEach(line => ws.send(line));
+});

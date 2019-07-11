@@ -76,7 +76,7 @@ export default {
 
     handleMessage(packet) {
       let message = this.parser.parse(packet[1]);
-      message.date = new Date(); // TODO: use data[0] instead
+      message.date = new Date(packet[0]);
 
       console.log(message);
       this.messages.push(message);
