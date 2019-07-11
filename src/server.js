@@ -31,7 +31,7 @@ client.on("data", function(data) {
       // ignore comments
       let date = new Date();
       fs.appendFile(
-        `log${datestamp(date)}.json`,
+        `log/log${datestamp(date)}.json`,
         JSON.stringify([date, packet]) + "\n",
         err => {
           if (err) throw err;
@@ -44,7 +44,7 @@ client.on("data", function(data) {
 
 wss.on("connection", ws => {
   let date = new Date();
-  fs.readFileSync(`log${datestamp(date)}.json`)
+  fs.readFileSync(`log/log${datestamp(date)}.json`)
     .toString()
     .split("\n")
     .forEach(line => ws.send(line));
