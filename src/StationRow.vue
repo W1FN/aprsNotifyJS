@@ -4,10 +4,12 @@
     <template v-if="status.lastHeard">
       <td>{{ formatTime(status.lastHeard) }}</td>
       <td>{{ formatTime(now - status.lastHeard, true) }}</td>
+      <td>{{ formatTime(Math.round(status.avgDelta), true) }}</td>
       <td>{{ status.lastVoltage || "" }}</td>
       <td>{{ status.lastTemperature || "" }}</td>
     </template>
     <template v-else>
+      <td>Never Heard</td>
       <td>Never Heard</td>
       <td>Never Heard</td>
       <td>Never Heard</td>
@@ -66,9 +68,14 @@ export default {
     messages() {
       Object.assign(
         this.status,
-        this.messages.reduce((acc, message) => {
+        this.messages.reduce((acc, message, idx, arr) => {
           acc.lastHeard = message.date.getTime();
-          acc.delta = message.date - acc.lastHeard;
+          if (idx === 0) {
+            acc.avgDelta = 0;
+          } else {
+            let delta = message.date.getTime() - arr[idx - 1].date.getTime();
+            acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
+          }
           if ("data" in message && "analog" in message.data) {
             acc.lastVoltage = message.data.analog[0] / 10;
             acc.lastTemperature = message.data.analog[1];

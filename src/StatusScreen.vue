@@ -5,6 +5,7 @@
         <th>Callsign</th>
         <th>Last Heard</th>
         <th>Time since Last Heard</th>
+        <th>Avg. Period</th>
         <th>Last Voltage</th>
         <th>Last Temperature</th>
       </tr>
