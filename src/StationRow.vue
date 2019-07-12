@@ -1,6 +1,6 @@
 <template>
   <tr :class="{ timedOut, lowVoltage, neverHeard: !status.lastHeard }">
-    <td :title="callsign">{{ tacticalOrCall }}</td>
+    <td :title="callsign">{{ tacticalAndOrCall }}</td>
     <template v-if="status.lastHeard">
       <td>{{ formatTime(status.lastHeard) }}</td>
       <td>{{ formatTime(now - status.lastHeard, true) }}</td>
@@ -81,7 +81,7 @@ export default {
     lowVoltage(newVal) {
       if (newVal) {
         this.notify(
-          `${this.tacticalOrCall}'s battery has dropepd below ${config.lowVoltage}V`,
+          `${this.tacticalAndOrCall}'s battery has dropepd below ${config.lowVoltage}V`,
           `Voltage: ${this.status.lastVoltage}`
         );
       }
@@ -91,7 +91,7 @@ export default {
       if (newVal) {
         this.notify(
           `${
-            this.tacticalOrCall
+            this.tacticalAndOrCall
           } has not been heard for over ${this.prettyDuration(
             config.timeoutLength
           )}!`,
@@ -104,8 +104,10 @@ export default {
   },
 
   computed: {
-    tacticalOrCall() {
-      return this.tactical || this.callsign;
+    tacticalAndOrCall() {
+      return this.tactical
+        ? `${this.tactical} [${this.callsign}]`
+        : this.callsign;
     },
 
     timedOut() {
