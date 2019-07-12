@@ -30,6 +30,8 @@ client.on("data", function(data) {
     if (!packet.startsWith("#")) {
       // ignore comments
       let date = new Date();
+      // create log dir if it doesn't exist
+      if (!fs.existsSync("log")) fs.mkdirSync("log");
       fs.appendFile(
         `log/log${datestamp(date)}.json`,
         JSON.stringify([date, packet]) + "\n",
@@ -44,8 +46,12 @@ client.on("data", function(data) {
 
 wss.on("connection", ws => {
   let date = new Date();
-  fs.readFileSync(`log/log${datestamp(date)}.json`)
-    .toString()
-    .split("\n")
-    .forEach(line => ws.send(line));
+  let filename = `log/log${datestamp(date)}.json`;
+
+  if (fs.existsSync(filename)) {
+    fs.readFileSync(filename)
+      .toString()
+      .split("\n")
+      .forEach(line => ws.send(line));
+  }
 });
