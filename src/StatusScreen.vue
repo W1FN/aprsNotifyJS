@@ -98,7 +98,11 @@ export default {
       ) {
         message.data.text.split(";").map(tac_assoc => {
           let [call, tac] = tac_assoc.split("=", 2);
-          this.trackedStations[call] = tac;
+          if (tac) {
+            this.trackedStations[call] = tac;
+          } else {
+            delete this.trackedStations[call];
+          }
         });
       }
     }
