@@ -85,8 +85,8 @@ export default {
               acc.lastVoltage = message.data.analog[0] / 10;
               acc.lastTemperature = message.data.analog[1];
             }
-            acc.lastMicE = message.data.mice;
-            acc.lastComment = message.data.comment;
+            acc.lastMicE = message.data.mice || acc.lastMicE;
+            acc.lastComment = message.data.comment || acc.lastComment;
           }
           return acc;
         }, {})
