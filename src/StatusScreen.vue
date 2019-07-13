@@ -120,4 +120,34 @@ table th {
   border: 1px solid black;
   padding: 2px;
 }
+
+table th {
+  background: white;
+  position: sticky;
+  top: 0px;
+}
+
+/* border magic for sticky header */
+/* https://stackoverflow.com/questions/50361698/border-style-do-not-work-with-sticky-position-element */
+th::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-right: 1px solid black;
+  display: block;
+  top: 1px;
+}
+th::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-bottom: 1px solid black;
+  border-top: 1px solid black;
+  display: block;
+  top: -1px;
+}
 </style>
