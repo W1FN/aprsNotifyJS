@@ -5,10 +5,14 @@
       <td>{{ formatTime(status.lastHeard) }}</td>
       <td>{{ formatTime(now - status.lastHeard, true) }}</td>
       <td>{{ formatTime(Math.round(status.avgDelta), true) }}</td>
+      <td>{{ status.lastMicE }}</td>
       <td>{{ status.lastVoltage || "" }}</td>
       <td>{{ status.lastTemperature || "" }}</td>
+      <td>{{ status.lastComment }}</td>
     </template>
     <template v-else>
+      <td>Never Heard</td>
+      <td>Never Heard</td>
       <td>Never Heard</td>
       <td>Never Heard</td>
       <td>Never Heard</td>
@@ -76,9 +80,13 @@ export default {
             let delta = message.date.getTime() - arr[idx - 1].date.getTime();
             acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
           }
-          if ("data" in message && "analog" in message.data) {
-            acc.lastVoltage = message.data.analog[0] / 10;
-            acc.lastTemperature = message.data.analog[1];
+          if ("data" in message) {
+            if ("analog" in message.data) {
+              acc.lastVoltage = message.data.analog[0] / 10;
+              acc.lastTemperature = message.data.analog[1];
+            }
+            acc.lastMicE = message.data.mice;
+            acc.lastComment = message.data.comment;
           }
           return acc;
         }, {})

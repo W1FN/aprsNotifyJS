@@ -6,8 +6,10 @@
         <th>Last Heard</th>
         <th>Time since Last Heard</th>
         <th>Avg. Period</th>
+        <th>Last MicE</th>
         <th>Last Voltage</th>
         <th>Last Temperature</th>
+        <th>Last Comment</th>
       </tr>
 
       <StationRow
