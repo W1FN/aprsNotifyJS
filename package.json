@@ -5,9 +5,11 @@
   "private": true,
   "dependencies": {
     "aprs-parser": "^1.0.4",
+    "distinct-colors": "^1.0.4",
     "ol": "^5.3.3",
     "vue": "^2.6.10",
     "vue-hot-reload-api": "^2.3.3",
+    "vuelayers": "^0.11.4",
     "ws": "^5.2.2"
   },
   "devDependencies": {
