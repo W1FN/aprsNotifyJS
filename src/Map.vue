@@ -22,7 +22,7 @@
           :key="callsign"
         >
           <!--Paths -->
-          <vl-layer-vector>
+          <vl-layer-vector render-mode="image">
             <vl-source-vector>
               <vl-feature>
                 <vl-geom-line-string
@@ -38,7 +38,7 @@
           </vl-layer-vector>
 
           <!-- Points -->
-          <vl-layer-vector>
+          <vl-layer-vector render-mode="image">
             <vl-source-vector>
               <vl-feature>
                 <vl-geom-multi-point
@@ -74,44 +74,25 @@
       </vl-layer-vector>
 
       <!-- Packet Paths -->
-      <vl-layer-group>
-        <vl-layer-group
-          v-for="(pkts, callsign) in stationPaths"
-          :key="callsign"
-        >
-          <!--Paths -->
-          <vl-layer-vector render-mode="image">
-            <vl-source-vector>
-              <template v-for="packet in pkts">
-                <vl-feature
-                  v-for="[coords, digi] in packetToPacketPathPoints(packet)"
-                  :key="digi"
-                >
-                  <vl-geom-line-string :coordinates="coords">
-                  </vl-geom-line-string>
-                  <vl-style-box>
-                    <vl-style-stroke :color="colorForDigi(digi)">
-                    </vl-style-stroke>
-                  </vl-style-box>
-                </vl-feature>
-              </template>
-            </vl-source-vector>
-          </vl-layer-vector>
-        </vl-layer-group>
-      </vl-layer-group>
+      <vl-layer-vector render-mode="image">
+        <vl-source-vector :features="packetPathsGeoJSON"> </vl-source-vector>
+        <vl-style-func :factory="() => packetPathStyleFunc"> </vl-style-func>
+      </vl-layer-vector>
     </vl-view>
   </vl-map>
 </template>
 
 <script>
+import Vue from "vue";
+
 import { APRSParser } from "aprs-parser";
 import distinctColors from "distinct-colors";
 
+import VueLayers from "vuelayers";
+import { createStyle, createLineGeom } from "vuelayers/lib/ol-ext";
 import { Control } from "ol/control";
 import { GPX } from "ol/format";
 
-import Vue from "vue";
-import VueLayers from "vuelayers";
 import "vuelayers/lib/style.css";
 
 Vue.use(VueLayers);
@@ -155,22 +136,6 @@ export default {
       ]);
     },
 
-    packetToPacketPathPoints(packet) {
-      return this.pathToString(packet.via).map((hop, index, hops) => {
-        if (this.digiPos[hop] === undefined) {
-          console.log(hop);
-        }
-
-        // first point in path is originating station
-        let previous =
-          index === 0
-            ? [packet.data.longitude, packet.data.latitude]
-            : this.digiPos[hops[index - 1]] || [0, 0];
-
-        return [[previous, this.digiPos[hop] || [0, 0]], hop];
-      });
-    },
-
     pathToString(path) {
       return path
         .filter(
@@ -195,13 +160,38 @@ export default {
       if (digi in this.digiColors) {
         return this.digiColors[digi].hex();
       } else {
-        return "black";
+        return "#000000";
       }
+    },
+
+    packetPathStyleFunc(feature, resolution) {
+      let paths = feature.getProperties().paths.slice(0);
+      let styles = [];
+
+      feature
+        .getGeometry()
+        .getLineStrings()
+        .forEach(ls => {
+          let path = paths.shift().slice(0);
+          ls.forEachSegment((start, end) => {
+            let color = this.colorForDigi(path.shift());
+
+            styles.push(
+              createStyle({
+                geom: createLineGeom([start, end]),
+                strokeColor: color,
+                strokeWidth: 2
+              })
+            );
+          });
+        });
+
+      return styles;
     }
   },
 
   computed: {
-    stationPaths() {
+    positionalPackets() {
       return (
         this.packets
           .filter(
@@ -211,9 +201,12 @@ export default {
           )
           // filter to just positional data
           .filter(packet => "data" in packet && "latitude" in packet.data)
-          // group by callsign
-          .reduce(this.groupByCall, {})
       );
+    },
+
+    stationPaths() {
+      // group by callsign
+      return this.positionalPackets.reduce(this.groupByCall, {});
     },
 
     digis() {
@@ -240,6 +233,33 @@ export default {
         acc[digi] = [lastPacket.data.longitude, lastPacket.data.latitude];
         return acc;
       }, {});
+    },
+
+    packetPathsGeoJSON() {
+      let digiPos = { ...this.digiPos }; // localize for performance
+      return Object.entries(this.stationPaths).map(([station, packets]) => {
+        let lines = packets.map(packet => {
+          let path = this.pathToString(packet.via);
+          return {
+            // first point in path is originating station
+            coords: [
+              [packet.data.longitude, packet.data.latitude],
+              ...path.map(hop => digiPos[hop] || [0, 0])
+            ],
+            path: path
+          };
+        });
+
+        return {
+          type: "Feature",
+          id: station,
+          geometry: {
+            type: "MultiLineString",
+            coordinates: lines.map(p => p.coords)
+          },
+          properties: { paths: lines.map(p => p.path) }
+        };
+      });
     },
 
     stationColors() {
