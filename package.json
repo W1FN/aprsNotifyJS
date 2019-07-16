@@ -7,15 +7,15 @@
     "aprs-parser": "^1.0.4",
     "distinct-colors": "^1.0.4",
     "ol": "^5.3.3",
-    "vue": "^2.6.10",
-    "vue-hot-reload-api": "^2.3.3",
-    "vuelayers": "^0.11.4",
+    "vue": "^2.6.11",
+    "vue-hot-reload-api": "^2.3.4",
+    "vuelayers": "^0.11.23",
     "ws": "^5.2.2"
   },
   "devDependencies": {
-    "@vue/component-compiler-utils": "^3.0.0",
-    "parcel": "^1.12.3",
-    "vue-template-compiler": "^2.6.10"
+    "@vue/component-compiler-utils": "^3.1.2",
+    "parcel": "^1.12.4",
+    "vue-template-compiler": "^2.6.11"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
