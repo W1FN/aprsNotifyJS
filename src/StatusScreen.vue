@@ -26,14 +26,14 @@
 </template>
 
 <script>
-import aprs from "aprs-parser";
+import aprs from 'aprs-parser';
 
-import StationRow from "./StationRow.vue";
+import StationRow from './StationRow.vue';
 
-import config from "./status_config.yaml";
+import config from './status_config.yaml';
 
 export default {
-  name: "StationStatus",
+  name: 'StationStatus',
   components: { StationRow },
   data() {
     return {
@@ -42,16 +42,16 @@ export default {
       messages: [],
       messagesFromStation: {},
       now: new Date(),
-      trackedStations: config.trackedStations
+      trackedStations: config.trackedStations,
     };
   },
 
   mounted() {
     // request notification permissions
-    if (Notification.permission !== "granted") {
-      Notification.requestPermission(permission => {
-        if (permission === "granted") {
-          new Notification("Test notification", { body: "whatever" });
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission((permission) => {
+        if (permission === 'granted') {
+          new Notification('Test notification', { body: 'whatever' });
         }
       });
     }
@@ -65,7 +65,7 @@ export default {
 
   methods: {
     connectToStream() {
-      this.aprsStream = new WebSocket("ws://localhost:4321");
+      this.aprsStream = new WebSocket('ws://localhost:4321');
       this.aprsStream.onclose = () => {
         // Try to reconnect every 5 seconds
         let interval = window.setTimeout(() => {
@@ -73,7 +73,7 @@ export default {
           this.connectToStream();
         }, 5000);
       };
-      this.aprsStream.onmessage = event =>
+      this.aprsStream.onmessage = (event) =>
         this.handleMessage(JSON.parse(event.data));
     },
 
@@ -95,11 +95,11 @@ export default {
       if (
         message.data &&
         message.data.addressee &&
-        message.data.addressee.call === "TACTICAL" &&
+        message.data.addressee.call === 'TACTICAL' &&
         config.TACTICAL_whitelist.includes(message.from.toString())
       ) {
-        message.data.text.split(";").map(tac_assoc => {
-          let [call, tac] = tac_assoc.split("=", 2);
+        message.data.text.split(';').map((tac_assoc) => {
+          let [call, tac] = tac_assoc.split('=', 2);
           if (tac) {
             this.trackedStations[call] = tac;
           } else {
@@ -107,8 +107,8 @@ export default {
           }
         });
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -132,7 +132,7 @@ table th {
 /* border magic for sticky header */
 /* https://stackoverflow.com/questions/50361698/border-style-do-not-work-with-sticky-position-element */
 th::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   width: 100%;
@@ -142,7 +142,7 @@ th::before {
   top: 1px;
 }
 th::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   width: 100%;

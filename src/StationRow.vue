@@ -6,8 +6,8 @@
       <td>{{ formatTime(now - status.lastHeard, true) }}</td>
       <td>{{ formatTime(Math.round(status.avgDelta), true) }}</td>
       <td>{{ status.lastMicE }}</td>
-      <td>{{ status.lastVoltage || "" }}</td>
-      <td>{{ status.lastTemperature || "" }}</td>
+      <td>{{ status.lastVoltage || '' }}</td>
+      <td>{{ status.lastTemperature || '' }}</td>
       <td>{{ status.lastComment }}</td>
     </template>
     <template v-else>
@@ -23,10 +23,10 @@
 </template>
 
 <script>
-import config from "./status_config.yaml";
+import config from './status_config.yaml';
 
 export default {
-  name: "StationRow",
+  name: 'StationRow',
   props: { callsign: String, tactical: String, messages: Array, now: Date },
 
   data() {
@@ -35,8 +35,8 @@ export default {
         lastHeard: null,
         delta: null,
         lastVoltage: null,
-        lastTemperature: null
-      }
+        lastTemperature: null,
+      },
     };
   },
 
@@ -47,8 +47,8 @@ export default {
 
     formatTime(time, isDuration = false) {
       return new Date(time).toLocaleTimeString(
-        "en-GB",
-        isDuration ? { timeZone: "UTC" } : {}
+        'en-GB',
+        isDuration ? { timeZone: 'UTC' } : {}
       );
     },
 
@@ -59,13 +59,13 @@ export default {
           hours: date.getUTCHours(),
           minutes: date.getUTCMinutes(),
           seconds: date.getUTCSeconds(),
-          milliseconds: date.getUTCMilliseconds()
-        })
+          milliseconds: date.getUTCMilliseconds(),
+        }),
       ]
         .filter(([suffix, num]) => num > 0)
-        .map(([suffix, num]) => num + " " + suffix)
-        .join(" ");
-    }
+        .map(([suffix, num]) => num + ' ' + suffix)
+        .join(' ');
+    },
   },
 
   watch: {
@@ -80,8 +80,8 @@ export default {
             let delta = message.date.getTime() - arr[idx - 1].date.getTime();
             acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
           }
-          if ("data" in message) {
-            if ("analog" in message.data) {
+          if ('data' in message) {
+            if ('analog' in message.data) {
               acc.lastVoltage = message.data.analog[0] / 10;
               acc.lastTemperature = message.data.analog[1];
             }
@@ -115,7 +115,7 @@ export default {
           )} (${this.prettyDuration(this.now - this.status.lastHeard)} ago!)`
         );
       }
-    }
+    },
   },
 
   computed: {
@@ -138,8 +138,8 @@ export default {
       return (
         this.status.lastVoltage && this.status.lastVoltage < config.lowVoltage
       );
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -83,32 +83,32 @@
 </template>
 
 <script>
-import Vue from "vue";
+import Vue from 'vue';
 
-import { APRSParser } from "aprs-parser";
-import distinctColors from "distinct-colors";
+import { APRSParser } from 'aprs-parser';
+import distinctColors from 'distinct-colors';
 
-import VueLayers from "vuelayers";
-import { createStyle, createLineGeom } from "vuelayers/lib/ol-ext";
-import { Control } from "ol/control";
-import { GPX } from "ol/format";
+import VueLayers from 'vuelayers';
+import { createStyle, createLineGeom } from 'vuelayers/lib/ol-ext';
+import { Control } from 'ol/control';
+import { GPX } from 'ol/format';
 
-import "vuelayers/lib/style.css";
+import 'vuelayers/lib/style.css';
 
 Vue.use(VueLayers);
 
-import route_data from "gpx/*.gpx";
-import { readFileSync } from "fs";
-const packetLog = readFileSync(__dirname + "/../IS_packets.txt", "utf-8");
+import route_data from 'gpx/*.gpx';
+import { readFileSync } from 'fs';
+const packetLog = readFileSync(__dirname + '/../IS_packets.txt', 'utf-8');
 
 function parsePackets(packetLog) {
   let parser = new APRSParser();
   return (
     packetLog
       .trim()
-      .split("\n")
+      .split('\n')
       // parse to Date and APRS packet
-      .map(line => {
+      .map((line) => {
         let packet = parser.parse(line.slice(29));
         packet.date = new Date(line.slice(0, 18));
         return packet;
@@ -120,7 +120,7 @@ export default {
   data() {
     return {
       packets: parsePackets(packetLog),
-      routes: route_data
+      routes: route_data,
     };
   },
 
@@ -130,23 +130,18 @@ export default {
     },
 
     packetsToStationPathPoints(packets) {
-      return packets.map(packet => [
+      return packets.map((packet) => [
         packet.data.longitude,
-        packet.data.latitude
+        packet.data.latitude,
       ]);
     },
 
     pathToString(path) {
       return path
         .filter(
-          station => !station.call.match(/WIDE[12]|qA?|UV[123]|.*\*$|UNCAN/)
+          (station) => !station.call.match(/WIDE[12]|qA?|UV[123]|.*\*$|UNCAN/)
         )
-        .map(station =>
-          station
-            .toString()
-            .trim()
-            .replace(/\*$/, "")
-        );
+        .map((station) => station.toString().trim().replace(/\*$/, ''));
     },
 
     groupByCall(acc, packet) {
@@ -160,7 +155,7 @@ export default {
       if (digi in this.digiColors) {
         return this.digiColors[digi].hex();
       } else {
-        return "#000000";
+        return '#000000';
       }
     },
 
@@ -171,7 +166,7 @@ export default {
       feature
         .getGeometry()
         .getLineStrings()
-        .forEach(ls => {
+        .forEach((ls) => {
           let path = paths.shift().slice(0);
           ls.forEachSegment((start, end) => {
             let color = this.colorForDigi(path.shift());
@@ -180,14 +175,14 @@ export default {
               createStyle({
                 geom: createLineGeom([start, end]),
                 strokeColor: color,
-                strokeWidth: 2
+                strokeWidth: 2,
               })
             );
           });
         });
 
       return styles;
-    }
+    },
   },
 
   computed: {
@@ -195,12 +190,12 @@ export default {
       return (
         this.packets
           .filter(
-            packet =>
-              packet.date > new Date("2018-07-13") &&
-              packet.date < new Date("2018-07-14")
+            (packet) =>
+              packet.date > new Date('2018-07-13') &&
+              packet.date < new Date('2018-07-14')
           )
           // filter to just positional data
-          .filter(packet => "data" in packet && "latitude" in packet.data)
+          .filter((packet) => 'data' in packet && 'latitude' in packet.data)
       );
     },
 
@@ -212,16 +207,16 @@ export default {
     digis() {
       let digiCalls = new Set(
         this.packets
-          .map(packet => this.pathToString(packet.via))
+          .map((packet) => this.pathToString(packet.via))
           .reduce((acc, stations) => acc.concat(stations))
       );
 
       return (
         this.packets
           // filter to digis
-          .filter(packet => digiCalls.has(packet.from.toString().trim()))
+          .filter((packet) => digiCalls.has(packet.from.toString().trim()))
           // filter to just positional data
-          .filter(packet => "data" in packet && "latitude" in packet.data)
+          .filter((packet) => 'data' in packet && 'latitude' in packet.data)
           // group by call
           .reduce(this.groupByCall, {})
       );
@@ -238,26 +233,26 @@ export default {
     packetPathsGeoJSON() {
       let digiPos = { ...this.digiPos }; // localize for performance
       return Object.entries(this.stationPaths).map(([station, packets]) => {
-        let lines = packets.map(packet => {
+        let lines = packets.map((packet) => {
           let path = this.pathToString(packet.via);
           return {
             // first point in path is originating station
             coords: [
               [packet.data.longitude, packet.data.latitude],
-              ...path.map(hop => digiPos[hop] || [0, 0])
+              ...path.map((hop) => digiPos[hop] || [0, 0]),
             ],
-            path: path
+            path: path,
           };
         });
 
         return {
-          type: "Feature",
+          type: 'Feature',
           id: station,
           geometry: {
-            type: "MultiLineString",
-            coordinates: lines.map(p => p.coords)
+            type: 'MultiLineString',
+            coordinates: lines.map((p) => p.coords),
           },
-          properties: { paths: lines.map(p => p.path) }
+          properties: { paths: lines.map((p) => p.path) },
         };
       });
     },
@@ -266,7 +261,7 @@ export default {
       return distinctColors({
         count: Object.keys(this.stationPaths).length,
         lightMin: 20,
-        lightMax: 80
+        lightMax: 80,
       });
     },
 
@@ -274,14 +269,14 @@ export default {
       let colors = distinctColors({
         count: Object.keys(this.digis).length,
         lightMin: 20,
-        lightMax: 80
+        lightMax: 80,
       });
       return Object.keys(this.digis).reduce((acc, callsign, index) => {
         acc[callsign] = colors[index];
         return acc;
       }, {});
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -325,11 +320,11 @@ body {
 }
 
 .expand + span::before {
-  content: "\25B6";
+  content: '\25B6';
 }
 
 .expand:checked + span::before {
-  content: "\25BC";
+  content: '\25BC';
 }
 
 .expand ~ .collapsible-content {
