@@ -22,9 +22,9 @@
     "monkeyPatch": "sed -i '8s|  APRSIS|  //APRSIS|' node_modules/aprs-parser/lib/index.js",
     "serve": "node src/server.js",
     "prestart": "npm run monkeyPatch",
-    "start": "npx parcel src/index.html",
+    "start": "parcel src/index.html",
     "prebuild": "npm run monkeyPatch",
-    "build": "npx parcel build --public-url ./ src/index.html"
+    "build": "parcel build --public-url ./ src/index.html"
   },
   "author": "Adam Goldsmith <contact@adamgoldsmith.name>",
   "license": "ISC"
