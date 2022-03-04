@@ -1,5 +1,13 @@
 <template>
   <div>
+    <button
+      class="notification-request"
+      v-show="!canNotify"
+      @click="requestNotification"
+    >
+      Enable Notifications
+    </button>
+
     <table>
       <tr>
         <th>Callsign</th>
@@ -38,17 +46,9 @@ const messages = ref([]);
 const messagesFromStation = ref({});
 const now = ref(new Date());
 const trackedStations = ref(config.trackedStations);
+const canNotify = ref(Notification.permission === 'granted');
 
 onMounted(() => {
-  // request notification permissions
-  if (Notification.permission !== 'granted') {
-    Notification.requestPermission((permission) => {
-      if (permission === 'granted') {
-        new Notification('Test notification', { body: 'whatever' });
-      }
-    });
-  }
-
   // Connect to websocket aprs stream
   connectToStream();
 
@@ -103,9 +103,29 @@ function handleMessage(packet) {
     });
   }
 }
+
+function requestNotification() {
+  // request notification permissions
+  if (Notification.permission !== 'granted') {
+    Notification.requestPermission((permission) => {
+      canNotify.value = permission;
+      if (permission === 'granted') {
+        new Notification('Test notification', { body: 'whatever' });
+      }
+    });
+  }
+}
 </script>
 
 <style>
+.notification-request {
+  position: fixed;
+  right: 1em;
+  bottom: 1em;
+  z-index: 1;
+  font-size: 1.5em;
+}
+
 table {
   border-collapse: collapse;
 }
