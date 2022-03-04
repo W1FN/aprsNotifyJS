@@ -27,8 +27,8 @@ client.on('data', function (data) {
 
   // strip whitespace, then handle multiple APRS packets per TCP packet
   str.split('\r\n').forEach((packet) => {
-    if (!packet.startsWith('#')) {
-      // ignore comments
+    // ignore comments and empty lines
+    if (!packet.startsWith('#') || packet === '') {
       let date = new Date();
       // create log dir if it doesn't exist
       if (!fs.existsSync('log')) fs.mkdirSync('log');
@@ -52,6 +52,7 @@ wss.on('connection', (ws) => {
     fs.readFileSync(filename)
       .toString()
       .split('\n')
+      .filter((line) => line !== '')
       .forEach((line) => ws.send(line));
   }
 });

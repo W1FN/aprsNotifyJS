@@ -25,91 +25,84 @@
   </div>
 </template>
 
-<script>
-import aprs from 'aprs-parser';
+<script setup>
+import { ref, onMounted } from 'vue';
+import APRSParser from 'aprs-parser/lib/APRSParser';
 
 import StationRow from './StationRow.vue';
-
 import config from './status_config.yaml';
 
-export default {
-  name: 'StationStatus',
-  components: { StationRow },
-  data() {
-    return {
-      aprsStream: null,
-      parser: new aprs.APRSParser(),
-      messages: [],
-      messagesFromStation: {},
-      now: new Date(),
-      trackedStations: config.trackedStations,
-    };
-  },
+const parser = new APRSParser();
+let aprsStream = null;
+const messages = ref([]);
+const messagesFromStation = ref({});
+const now = ref(new Date());
+const trackedStations = ref(config.trackedStations);
 
-  mounted() {
-    // request notification permissions
-    if (Notification.permission !== 'granted') {
-      Notification.requestPermission((permission) => {
-        if (permission === 'granted') {
-          new Notification('Test notification', { body: 'whatever' });
-        }
-      });
+onMounted(() => {
+  // request notification permissions
+  if (Notification.permission !== 'granted') {
+    Notification.requestPermission((permission) => {
+      if (permission === 'granted') {
+        new Notification('Test notification', { body: 'whatever' });
+      }
+    });
+  }
+
+  // Connect to websocket aprs stream
+  connectToStream();
+
+  // update shared current time every second
+  window.setInterval(() => (now.value = new Date()), 1000);
+});
+
+function connectToStream() {
+  aprsStream = new WebSocket('ws://localhost:4321');
+  aprsStream.onclose = () => {
+    // Try to reconnect every 5 seconds
+    let interval = window.setTimeout(() => {
+      window.clearInterval(interval);
+      connectToStream();
+    }, 5000);
+  };
+  aprsStream.onmessage = (event) => {
+    if (event.data !== '') {
+      handleMessage(JSON.parse(event.data));
     }
+  };
+}
 
-    // Connect to websocket aprs stream
-    this.connectToStream();
+function handleMessage(packet) {
+  let message = parser.parse(packet[1]);
+  message.date = new Date(packet[0]);
 
-    // update shared current time every second
-    window.setInterval(() => (this.now = new Date()), 1000);
-  },
+  console.info(message);
+  messages.value.push(message);
+  let callsign = message.from && message.from.toString();
+  if (callsign in messagesFromStation.value) {
+    messagesFromStation.value[callsign].push(message);
+  } else {
+    messagesFromStation.value[callsign] = [message];
+  }
 
-  methods: {
-    connectToStream() {
-      this.aprsStream = new WebSocket('ws://localhost:4321');
-      this.aprsStream.onclose = () => {
-        // Try to reconnect every 5 seconds
-        let interval = window.setTimeout(() => {
-          window.clearInterval(interval);
-          this.connectToStream();
-        }, 5000);
-      };
-      this.aprsStream.onmessage = (event) =>
-        this.handleMessage(JSON.parse(event.data));
-    },
-
-    handleMessage(packet) {
-      let message = this.parser.parse(packet[1]);
-      message.date = new Date(packet[0]);
-
-      console.log(message);
-      this.messages.push(message);
-      let callsign = message.from && message.from.toString();
-      if (callsign in this.messagesFromStation) {
-        this.messagesFromStation[callsign].push(message);
+  // message to TACTICAL setting a tactical nickname from an
+  // authorized call, so add/update it in trackedStations
+  if (
+    message.data &&
+    message.data.addressee &&
+    message.data.addressee.call === 'TACTICAL' &&
+    config.TACTICAL_whitelist.includes(message.from.toString())
+  ) {
+    message.data.text.split(';').map((tac_assoc) => {
+      let [call, tac] = tac_assoc.split('=', 2);
+      if (tac) {
+        trackedStations.value[call] = tac;
       } else {
-        this.$set(this.messagesFromStation, callsign, [message]);
+        delete trackedStations.value[call];
       }
-
-      // message to TACTICAL setting a tactical nickname from an
-      // authorized call, so add/update it in trackedStations
-      if (
-        message.data &&
-        message.data.addressee &&
-        message.data.addressee.call === 'TACTICAL' &&
-        config.TACTICAL_whitelist.includes(message.from.toString())
-      ) {
-        message.data.text.split(';').map((tac_assoc) => {
-          let [call, tac] = tac_assoc.split('=', 2);
-          if (tac) {
-            this.trackedStations[call] = tac;
-          } else {
-            delete this.trackedStations[call];
-          }
-        });
-      }
-    },
-  },
-};
+    });
+  }
+}
 </script>
 
 <style>

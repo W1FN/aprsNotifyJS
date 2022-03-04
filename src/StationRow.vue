@@ -1,14 +1,14 @@
 <template>
-  <tr :class="{ timedOut, lowVoltage, neverHeard: !status.lastHeard }">
+  <tr :class="{ timedOut, lowVoltage, neverHeard: !stationStatus.lastHeard }">
     <td :title="callsign">{{ tacticalAndOrCall }}</td>
-    <template v-if="status.lastHeard">
-      <td>{{ formatTime(status.lastHeard) }}</td>
-      <td>{{ formatTime(now - status.lastHeard, true) }}</td>
-      <td>{{ formatTime(Math.round(status.avgDelta), true) }}</td>
-      <td>{{ status.lastMicE }}</td>
-      <td>{{ status.lastVoltage || '' }}</td>
-      <td>{{ status.lastTemperature || '' }}</td>
-      <td>{{ status.lastComment }}</td>
+    <template v-if="stationStatus.lastHeard">
+      <td>{{ formatTime(stationStatus.lastHeard) }}</td>
+      <td>{{ formatTime(now - stationStatus.lastHeard, true) }}</td>
+      <td>{{ formatTime(Math.round(stationStatus.avgDelta), true) }}</td>
+      <td>{{ stationStatus.lastMicE }}</td>
+      <td>{{ stationStatus.lastVoltage || '' }}</td>
+      <td>{{ stationStatus.lastTemperature || '' }}</td>
+      <td>{{ stationStatus.lastComment }}</td>
     </template>
     <template v-else>
       <td>Never Heard</td>
@@ -22,125 +22,125 @@
   </tr>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch } from 'vue';
 import config from './status_config.yaml';
 
-export default {
-  name: 'StationRow',
-  props: { callsign: String, tactical: String, messages: Array, now: Date },
+const props = defineProps({
+  callsign: String,
+  tactical: String,
+  messages: Array,
+  now: Date,
+});
 
-  data() {
-    return {
-      status: {
-        lastHeard: null,
-        delta: null,
-        lastVoltage: null,
-        lastTemperature: null,
-      },
-    };
-  },
+const stationStatus = ref({
+  lastHeard: null,
+  delta: null,
+  lastVoltage: null,
+  lastTemperature: null,
+});
 
-  methods: {
-    notify(title, body) {
-      return new Notification(title, { body: body, requireInteraction: true });
-    },
+function notify(title, body) {
+  return new Notification(title, { body: body, requireInteraction: true });
+}
 
-    formatTime(time, isDuration = false) {
-      return new Date(time).toLocaleTimeString(
-        'en-GB',
-        isDuration ? { timeZone: 'UTC' } : {}
-      );
-    },
+function formatTime(time, isDuration = false) {
+  return new Date(time).toLocaleTimeString(
+    'en-GB',
+    isDuration ? { timeZone: 'UTC' } : {}
+  );
+}
 
-    prettyDuration(duration) {
-      let date = new Date(duration);
-      return [
-        ...Object.entries({
-          hours: date.getUTCHours(),
-          minutes: date.getUTCMinutes(),
-          seconds: date.getUTCSeconds(),
-          milliseconds: date.getUTCMilliseconds(),
-        }),
-      ]
-        .filter(([suffix, num]) => num > 0)
-        .map(([suffix, num]) => num + ' ' + suffix)
-        .join(' ');
-    },
-  },
+function prettyDuration(duration) {
+  let date = new Date(duration);
+  return [
+    ...Object.entries({
+      hours: date.getUTCHours(),
+      minutes: date.getUTCMinutes(),
+      seconds: date.getUTCSeconds(),
+      milliseconds: date.getUTCMilliseconds(),
+    }),
+  ]
+    .filter(([suffix, num]) => num > 0)
+    .map(([suffix, num]) => num + ' ' + suffix)
+    .join(' ');
+}
 
-  watch: {
-    messages() {
-      Object.assign(
-        this.status,
-        this.messages.reduce((acc, message, idx, arr) => {
-          acc.lastHeard = message.date.getTime();
-          if (idx === 0) {
-            acc.avgDelta = 0;
-          } else {
-            let delta = message.date.getTime() - arr[idx - 1].date.getTime();
-            acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
+const tacticalAndOrCall = computed(() => {
+  return props.tactical
+    ? `${props.tactical} [${props.callsign}]`
+    : props.callsign;
+});
+
+const timedOut = computed(() => {
+  if (!stationStatus.value.lastHeard) {
+    return false;
+  }
+
+  let nowDelta = new Date(props.now.value - stationStatus.value.lastHeard);
+  return nowDelta.getTime() > config.timeoutLength;
+});
+
+const lowVoltage = computed(() => {
+  return (
+    stationStatus.value.lastVoltage &&
+    stationStatus.value.lastVoltage < config.lowVoltage
+  );
+});
+
+watch(
+  () => props.messages,
+  () => {
+    Object.assign(
+      stationStatus.value,
+      props.messages.reduce((acc, message, idx, arr) => {
+        acc.lastHeard = message.date.getTime();
+        if (idx === 0) {
+          acc.avgDelta = 0;
+        } else {
+          let delta = message.date.getTime() - arr[idx - 1].date.getTime();
+          acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
+        }
+        if ('data' in message) {
+          if ('analog' in message.data) {
+            acc.lastVoltage = message.data.analog[0] / 10;
+            acc.lastTemperature = message.data.analog[1];
           }
-          if ('data' in message) {
-            if ('analog' in message.data) {
-              acc.lastVoltage = message.data.analog[0] / 10;
-              acc.lastTemperature = message.data.analog[1];
-            }
-            acc.lastMicE = message.data.mice || acc.lastMicE;
-            acc.lastComment = message.data.comment || acc.lastComment;
-          }
-          return acc;
-        }, {})
+          acc.lastMicE = message.data.mice || acc.lastMicE;
+          acc.lastComment = message.data.comment || acc.lastComment;
+        }
+        return acc;
+      }, {})
+    );
+  }
+);
+
+watch(
+  () => props.lowVoltage,
+  (newVal) => {
+    if (newVal) {
+      notify(
+        `${tacticalAndOrCall}'s battery has dropepd below ${config.lowVoltage}V`,
+        `Voltage: ${stationStatus.value.lastVoltage}`
       );
-    },
+    }
+  }
+);
 
-    lowVoltage(newVal) {
-      if (newVal) {
-        this.notify(
-          `${this.tacticalAndOrCall}'s battery has dropepd below ${config.lowVoltage}V`,
-          `Voltage: ${this.status.lastVoltage}`
-        );
-      }
-    },
-
-    timedOut(newVal) {
-      if (newVal) {
-        this.notify(
-          `${
-            this.tacticalAndOrCall
-          } has not been heard for over ${this.prettyDuration(
-            config.timeoutLength
-          )}!`,
-          `Last Heard: ${this.formatTime(
-            this.status.lastHeard
-          )} (${this.prettyDuration(this.now - this.status.lastHeard)} ago!)`
-        );
-      }
-    },
-  },
-
-  computed: {
-    tacticalAndOrCall() {
-      return this.tactical
-        ? `${this.tactical} [${this.callsign}]`
-        : this.callsign;
-    },
-
-    timedOut() {
-      if (!this.status.lastHeard) {
-        return false;
-      }
-
-      let nowDelta = new Date(this.now - this.status.lastHeard);
-      return nowDelta.getTime() > config.timeoutLength;
-    },
-
-    lowVoltage() {
-      return (
-        this.status.lastVoltage && this.status.lastVoltage < config.lowVoltage
-      );
-    },
-  },
-};
+watch(timedOut, (newVal) => {
+  if (newVal) {
+    notify(
+      `${tacticalAndOrCall.value} has not been heard for over ${prettyDuration(
+        config.timeoutLength
+      )}!`,
+      `Last Heard: ${formatTime(
+        stationStatus.value.lastHeard
+      )} (${prettyDuration(
+        props.now.value - stationStatus.value.lastHeard
+      )} ago!)`
+    );
+  }
+});
 </script>
 
 <style>

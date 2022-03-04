@@ -4,27 +4,23 @@
   "description": "",
   "private": true,
   "dependencies": {
-    "aprs-parser": "^1.0.4",
+    "aprs-parser": "github:ad1217/npm-aprs-parser#no-dynamic-require",
     "distinct-colors": "^1.0.4",
-    "ol": "^5.3.3",
-    "vue": "^2.6.11",
-    "vue-hot-reload-api": "^2.3.4",
-    "vuelayers": "^0.11.23",
+    "ol": "^6.13.0",
+    "vue": "^3.2.31",
+    "vue3-openlayers": "^0.1.63",
     "ws": "^5.2.2"
   },
   "devDependencies": {
-    "@vue/component-compiler-utils": "^3.1.2",
-    "parcel": "^1.12.4",
-    "vue-template-compiler": "^2.6.11"
+    "@modyfi/vite-plugin-yaml": "^1.0.1",
+    "@rollup/plugin-yaml": "^3.1.0",
+    "@vitejs/plugin-vue": "^2.2.4",
+    "vite": "^2.8.6"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "monkeyPatch": "sed -i '8s|  APRSIS|  //APRSIS|' node_modules/aprs-parser/lib/index.js",
     "serve": "node src/server.js",
-    "prestart": "npm run monkeyPatch",
-    "start": "parcel src/index.html",
-    "prebuild": "npm run monkeyPatch",
-    "build": "parcel build --public-url ./ src/index.html"
+    "start": "vite",
+    "build": "vite build"
   },
   "author": "Adam Goldsmith <contact@adamgoldsmith.name>",
   "license": "ISC"

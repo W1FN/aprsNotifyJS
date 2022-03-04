@@ -1,7 +1,12 @@
-import Vue from 'vue';
-import App from './StatusScreen.vue';
+import * as Vue from 'vue';
 
-new Vue({
-  el: '#app',
-  render: (h) => h(App),
-});
+// import OpenLayersMap from 'vue3-openlayers';
+// import 'vue3-openlayers/dist/vue3-openlayers.css';
+
+import StatusScreen from './StatusScreen.vue';
+// import Map from './Map.vue';
+
+const app = Vue.createApp(StatusScreen);
+// app.use(OpenLayersMap);
+
+app.mount('#app');

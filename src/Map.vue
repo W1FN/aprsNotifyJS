@@ -1,283 +1,254 @@
 <template>
-  <vl-map data-projection="EPSG:4326">
-    <vl-view :zoom="10" :center="[-72.15, 43.9]">
-      <vl-layer-tile>
-        <vl-source-osm> </vl-source-osm>
-      </vl-layer-tile>
-      <vl-layer-group>
-        <vl-layer-vector v-for="(gpxURL, name) in routes" :key="name">
-          <vl-source-vector :url="gpxURL" :format-factory="gpxFormatFactory">
-          </vl-source-vector>
-          <vl-style-box>
-            <vl-style-stroke color="hsl(200, 90%, 30%)" :width="5">
-            </vl-style-stroke>
-          </vl-style-box>
-        </vl-layer-vector>
-      </vl-layer-group>
+  <ol-map
+    :loadTilesWhileAnimating="true"
+    :loadTilesWhileInteracting="true"
+    class="map"
+  >
+    <ol-view :zoom="10" :center="[-72.15, 43.9]" projection="EPSG:4326" />
 
-      <!-- Station Paths -->
-      <vl-layer-group>
-        <vl-layer-group
-          v-for="(packets, callsign, idx) in stationPaths"
-          :key="callsign"
-        >
-          <!--Paths -->
-          <vl-layer-vector render-mode="image">
-            <vl-source-vector>
-              <vl-feature>
-                <vl-geom-line-string
-                  :coordinates="packetsToStationPathPoints(packets)"
-                >
-                </vl-geom-line-string>
-              </vl-feature>
-            </vl-source-vector>
-            <vl-style-box>
-              <vl-style-stroke :color="stationColors[idx].hex()" :width="2">
-              </vl-style-stroke>
-            </vl-style-box>
-          </vl-layer-vector>
+    <ol-tile-layer>
+      <ol-source-osm />
+    </ol-tile-layer>
 
-          <!-- Points -->
-          <vl-layer-vector render-mode="image">
-            <vl-source-vector>
-              <vl-feature>
-                <vl-geom-multi-point
-                  :coordinates="packetsToStationPathPoints(packets)"
-                >
-                </vl-geom-multi-point>
-              </vl-feature>
-            </vl-source-vector>
-            <vl-style-box>
-              <vl-style-circle :radius="3">
-                <vl-style-fill :color="stationColors[idx].hex()">
-                </vl-style-fill>
-              </vl-style-circle>
-            </vl-style-box>
-          </vl-layer-vector>
-        </vl-layer-group>
-      </vl-layer-group>
+    <ol-vector-layer v-for="gpxURL in routes" :key="gpxURL">
+      <ol-source-vector :url="gpxURL" :format="new GPX()"> </ol-source-vector>
+      <ol-style>
+        <ol-style-stroke color="hsl(200, 90%, 30%)" :width="5">
+        </ol-style-stroke>
+      </ol-style>
+    </ol-vector-layer>
 
-      <!-- Digipeater locations -->
-      <vl-layer-vector>
-        <vl-source-vector>
-          <vl-feature v-for="(position, callsign) in digiPos" :key="callsign">
-            <vl-geom-point :coordinates="position"> </vl-geom-point>
-            <vl-style-box>
-              <vl-style-circle>
-                <vl-style-fill :color="digiColors[callsign].hex()">
-                </vl-style-fill
-              ></vl-style-circle>
-              <vl-style-text :text="callsign" :offsetY="12"> </vl-style-text>
-            </vl-style-box>
-          </vl-feature>
-        </vl-source-vector>
-      </vl-layer-vector>
+    <!-- Station Paths -->
+    <div>
+      <div v-for="(packets, callsign, idx) in stationPaths" :key="callsign">
+        <!--Paths -->
+        <ol-vector-layer render-mode="image">
+          <ol-source-vector>
+            <ol-feature>
+              <ol-geom-line-string
+                :coordinates="packetsToStationPathPoints(packets)"
+              >
+              </ol-geom-line-string>
+            </ol-feature>
+          </ol-source-vector>
+          <ol-style>
+            <ol-style-stroke :color="stationColors[idx].hex()" :width="2">
+            </ol-style-stroke>
+          </ol-style>
+        </ol-vector-layer>
 
-      <!-- Packet Paths -->
-      <vl-layer-vector render-mode="image">
-        <vl-source-vector :features="packetPathsGeoJSON"> </vl-source-vector>
-        <vl-style-func :factory="() => packetPathStyleFunc"> </vl-style-func>
-      </vl-layer-vector>
-    </vl-view>
-  </vl-map>
+        <!-- Points -->
+        <ol-vector-layer render-mode="image">
+          <ol-source-vector>
+            <ol-feature>
+              <ol-geom-multi-point
+                :coordinates="packetsToStationPathPoints(packets)"
+              >
+              </ol-geom-multi-point>
+            </ol-feature>
+          </ol-source-vector>
+          <ol-style>
+            <ol-style-circle :radius="3">
+              <ol-style-fill :color="stationColors[idx].hex()"> </ol-style-fill>
+            </ol-style-circle>
+          </ol-style>
+        </ol-vector-layer>
+      </div>
+    </div>
+
+    <!-- Digipeater locations -->
+    <ol-vector-layer>
+      <ol-source-vector>
+        <ol-feature v-for="(position, callsign) in digiPos" :key="callsign">
+          <ol-geom-point :coordinates="position"> </ol-geom-point>
+          <ol-style>
+            <ol-style-circle>
+              <ol-style-fill :color="digiColors[callsign].hex()">
+              </ol-style-fill>
+            </ol-style-circle>
+            <ol-style-text :text="callsign" :offsetY="12"> </ol-style-text>
+          </ol-style>
+        </ol-feature>
+      </ol-source-vector>
+    </ol-vector-layer>
+
+    <!-- Packet Paths -->
+    <ol-vector-layer>
+      <ol-source-vector :features="packetPaths"> </ol-source-vector>
+      <!-- TODO: fix style -->
+      <!-- <ol-style :overrideStyleFunction="packetPathStyleFunc"> </ol-style> -->
+    </ol-vector-layer>
+  </ol-map>
 </template>
 
-<script>
-import Vue from 'vue';
+<script setup>
+import { computed, ref } from 'vue';
 
-import { APRSParser } from 'aprs-parser';
+import APRSParser from 'aprs-parser/lib/APRSParser';
 import distinctColors from 'distinct-colors';
 
-import VueLayers from 'vuelayers';
-import { createStyle, createLineGeom } from 'vuelayers/lib/ol-ext';
-import { Control } from 'ol/control';
 import { GPX } from 'ol/format';
+import Feature from 'ol/Feature';
+import MultiLineString from 'ol/geom/MultiLineString';
+import LineString from 'ol/geom/LineString';
+import Style from 'ol/style/Style';
+import Stroke from 'ol/style/Stroke';
 
-import 'vuelayers/lib/style.css';
+import packetLog from '/../IS_packets.txt?raw';
+const routes = Object.values(import.meta.globEager('./gpx/*.gpx')).map(
+  (gpx) => gpx.default
+);
 
-Vue.use(VueLayers);
+const parser = new APRSParser();
+const packets = packetLog
+  .trim()
+  .split('\n')
+  // parse to Date and APRS packet
+  .map((line) => {
+    let packet = parser.parse(line.slice(29));
+    packet.date = new Date(line.slice(0, 18));
+    return packet;
+  });
 
-import route_data from 'gpx/*.gpx';
-import { readFileSync } from 'fs';
-const packetLog = readFileSync(__dirname + '/../IS_packets.txt', 'utf-8');
-
-function parsePackets(packetLog) {
-  let parser = new APRSParser();
-  return (
-    packetLog
-      .trim()
-      .split('\n')
-      // parse to Date and APRS packet
-      .map((line) => {
-        let packet = parser.parse(line.slice(29));
-        packet.date = new Date(line.slice(0, 18));
-        return packet;
-      })
-  );
+function packetsToStationPathPoints(packets) {
+  return packets.map((packet) => [packet.data.longitude, packet.data.latitude]);
 }
 
-export default {
-  data() {
-    return {
-      packets: parsePackets(packetLog),
-      routes: route_data,
-    };
-  },
+function pathToString(path) {
+  return path
+    .filter(
+      (station) => !station.call.match(/WIDE[12]|qA?|UV[123]|.*\*$|UNCAN/)
+    )
+    .map((station) => station.toString().trim().replace(/\*$/, ''));
+}
 
-  methods: {
-    gpxFormatFactory(options) {
-      return new GPX(options);
-    },
+function groupByCall(acc, packet) {
+  let callsign = packet.from.toString().trim();
+  if (!(callsign in acc)) acc[callsign] = [];
+  acc[callsign].push(packet);
+  return acc;
+}
 
-    packetsToStationPathPoints(packets) {
-      return packets.map((packet) => [
-        packet.data.longitude,
-        packet.data.latitude,
-      ]);
-    },
+function colorForDigi(digi) {
+  if (digi in digiColors.value) {
+    return digiColors.value[digi].hex();
+  } else {
+    return '#000000';
+  }
+}
 
-    pathToString(path) {
-      return path
-        .filter(
-          (station) => !station.call.match(/WIDE[12]|qA?|UV[123]|.*\*$|UNCAN/)
-        )
-        .map((station) => station.toString().trim().replace(/\*$/, ''));
-    },
+function packetPathStyleFunc(feature, resolution) {
+  let paths = feature.getProperties().properties.paths.slice(0);
+  let styles = [];
 
-    groupByCall(acc, packet) {
-      let callsign = packet.from.toString().trim();
-      if (!(callsign in acc)) acc[callsign] = [];
-      acc[callsign].push(packet);
-      return acc;
-    },
+  feature
+    .getGeometry()
+    .getLineStrings()
+    .forEach((ls) => {
+      let path = paths.shift().slice(0);
+      ls.forEachSegment((start, end) => {
+        let color = colorForDigi(path.shift());
 
-    colorForDigi(digi) {
-      if (digi in this.digiColors) {
-        return this.digiColors[digi].hex();
-      } else {
-        return '#000000';
-      }
-    },
-
-    packetPathStyleFunc(feature, resolution) {
-      let paths = feature.getProperties().paths.slice(0);
-      let styles = [];
-
-      feature
-        .getGeometry()
-        .getLineStrings()
-        .forEach((ls) => {
-          let path = paths.shift().slice(0);
-          ls.forEachSegment((start, end) => {
-            let color = this.colorForDigi(path.shift());
-
-            styles.push(
-              createStyle({
-                geom: createLineGeom([start, end]),
-                strokeColor: color,
-                strokeWidth: 2,
-              })
-            );
-          });
-        });
-
-      return styles;
-    },
-  },
-
-  computed: {
-    positionalPackets() {
-      return (
-        this.packets
-          .filter(
-            (packet) =>
-              packet.date > new Date('2018-07-13') &&
-              packet.date < new Date('2018-07-14')
-          )
-          // filter to just positional data
-          .filter((packet) => 'data' in packet && 'latitude' in packet.data)
-      );
-    },
-
-    stationPaths() {
-      // group by callsign
-      return this.positionalPackets.reduce(this.groupByCall, {});
-    },
-
-    digis() {
-      let digiCalls = new Set(
-        this.packets
-          .map((packet) => this.pathToString(packet.via))
-          .reduce((acc, stations) => acc.concat(stations))
-      );
-
-      return (
-        this.packets
-          // filter to digis
-          .filter((packet) => digiCalls.has(packet.from.toString().trim()))
-          // filter to just positional data
-          .filter((packet) => 'data' in packet && 'latitude' in packet.data)
-          // group by call
-          .reduce(this.groupByCall, {})
-      );
-    },
-
-    digiPos() {
-      return Object.entries(this.digis).reduce((acc, [digi, packets]) => {
-        let lastPacket = packets[packets.length - 1];
-        acc[digi] = [lastPacket.data.longitude, lastPacket.data.latitude];
-        return acc;
-      }, {});
-    },
-
-    packetPathsGeoJSON() {
-      let digiPos = { ...this.digiPos }; // localize for performance
-      return Object.entries(this.stationPaths).map(([station, packets]) => {
-        let lines = packets.map((packet) => {
-          let path = this.pathToString(packet.via);
-          return {
-            // first point in path is originating station
-            coords: [
-              [packet.data.longitude, packet.data.latitude],
-              ...path.map((hop) => digiPos[hop] || [0, 0]),
-            ],
-            path: path,
-          };
-        });
-
-        return {
-          type: 'Feature',
-          id: station,
-          geometry: {
-            type: 'MultiLineString',
-            coordinates: lines.map((p) => p.coords),
-          },
-          properties: { paths: lines.map((p) => p.path) },
-        };
+        styles.push(
+          new Style({
+            geometry: new LineString([start, end]),
+            stroke: new Stroke({ color: color, width: 2 }),
+          })
+        );
       });
-    },
+    });
 
-    stationColors() {
-      return distinctColors({
-        count: Object.keys(this.stationPaths).length,
-        lightMin: 20,
-        lightMax: 80,
-      });
-    },
+  console.log(styles);
 
-    digiColors() {
-      let colors = distinctColors({
-        count: Object.keys(this.digis).length,
-        lightMin: 20,
-        lightMax: 80,
-      });
-      return Object.keys(this.digis).reduce((acc, callsign, index) => {
-        acc[callsign] = colors[index];
-        return acc;
-      }, {});
-    },
-  },
-};
+  return styles;
+}
+
+const positionalPackets = computed(() => {
+  return (
+    packets
+      .filter(
+        (packet) =>
+          packet.date > new Date('2018-07-13') &&
+          packet.date < new Date('2018-07-14')
+      )
+      // filter to just positional data
+      .filter((packet) => 'data' in packet && 'latitude' in packet.data)
+  );
+});
+
+const stationPaths = computed(() => {
+  // group by callsign
+  return positionalPackets.value.reduce(groupByCall, {});
+});
+
+const digis = computed(() => {
+  let digiCalls = new Set(
+    packets
+      .map((packet) => pathToString(packet.via))
+      .reduce((acc, stations) => acc.concat(stations))
+  );
+
+  return (
+    packets
+      // filter to digis
+      .filter((packet) => digiCalls.has(packet.from.toString().trim()))
+      // filter to just positional data
+      .filter((packet) => 'data' in packet && 'latitude' in packet.data)
+      // group by call
+      .reduce(groupByCall, {})
+  );
+});
+
+const digiPos = computed(() => {
+  return Object.entries(digis.value).reduce((acc, [digi, packets]) => {
+    let lastPacket = packets[packets.length - 1];
+    acc[digi] = [lastPacket.data.longitude, lastPacket.data.latitude];
+    return acc;
+  }, {});
+});
+
+const packetPaths = computed(() => {
+  let digipeaterPostitions = digiPos.value;
+  return Object.entries(stationPaths.value).map(([station, packets]) => {
+    let lines = packets.map((packet) => {
+      let path = pathToString(packet.via);
+      return {
+        // first point in path is originating station
+        coords: [
+          [packet.data.longitude, packet.data.latitude],
+          ...path.map((hop) => digipeaterPostitions[hop] || [0, 0]),
+        ],
+        path: path,
+      };
+    });
+
+    return new Feature({
+      id: station,
+      geometry: new MultiLineString(lines.map((p) => p.coords)),
+      properties: { paths: lines.map((p) => p.path) },
+    });
+  });
+});
+
+const stationColors = computed(() => {
+  return distinctColors({
+    count: Object.keys(stationPaths.value).length,
+    lightMin: 20,
+    lightMax: 80,
+  });
+});
+
+const digiColors = computed(() => {
+  let colors = distinctColors({
+    count: Object.keys(digis.value).length,
+    lightMin: 20,
+    lightMax: 80,
+  });
+  return Object.keys(digis.value).reduce((acc, callsign, index) => {
+    acc[callsign] = colors[index];
+    return acc;
+  }, {});
+});
 </script>
 
 <style>
@@ -288,8 +259,8 @@ body {
 }
 
 .map {
-  height: 100%;
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
 }
 
 .ol-control.layer-toggles {
