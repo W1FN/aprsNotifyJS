@@ -10,7 +10,6 @@ specifiers:
   vite: ^2.8.6
   vue: ^3.2.31
   vue3-openlayers: ^0.1.63
-  ws: ^5.2.2
 
 dependencies:
   aprs-parser: github.com/ad1217/npm-aprs-parser/39cf938ea79e08cd3127997fd1b2fc41abb0b56f
@@ -18,7 +17,6 @@ dependencies:
   ol: 6.13.0
   vue: 3.2.31
   vue3-openlayers: 0.1.63
-  ws: 5.2.3
 
 devDependencies:
   '@modyfi/vite-plugin-yaml': 1.0.1
@@ -275,10 +273,6 @@ packages:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
     engines: {node: '>=8'}
     dev: true
-
-  /async-limiter/1.0.1:
-    resolution: {integrity: sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==}
-    dev: false
 
   /atob/2.1.2:
     resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
@@ -1647,12 +1641,6 @@ packages:
   /wrappy/1.0.2:
     resolution: {integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=}
     dev: true
-
-  /ws/5.2.3:
-    resolution: {integrity: sha512-jZArVERrMsKUatIdnLzqvcfydI85dvd/Fp1u/VOpfdDWQ4c9qWXe+VIeAbQ5FrDwciAkr+lzofXLz3Kuf26AOA==}
-    dependencies:
-      async-limiter: 1.0.1
-    dev: false
 
   /xml-utils/1.0.2:
     resolution: {integrity: sha512-rEn0FvKi+YGjv9omf22oAf+0d6Ly/sgJ/CUufU/nOzS7SRLmgwSujrewc03KojXxt+aPaTRpm593TgehtUBMSQ==}

@@ -8,8 +8,7 @@
     "distinct-colors": "^1.0.4",
     "ol": "^6.13.0",
     "vue": "^3.2.31",
-    "vue3-openlayers": "^0.1.63",
-    "ws": "^5.2.2"
+    "vue3-openlayers": "^0.1.63"
   },
   "devDependencies": {
     "@modyfi/vite-plugin-yaml": "^1.0.1",
@@ -18,8 +17,8 @@
     "vite": "^2.8.6"
   },
   "scripts": {
-    "serve": "node src/server.js",
-    "start": "vite",
+    "start": "pnpm run -r --parallel dev",
+    "dev": "vite",
     "build": "vite build"
   },
   "author": "Adam Goldsmith <contact@adamgoldsmith.name>",
