@@ -33,13 +33,6 @@ const props = defineProps({
   now: Date,
 });
 
-const stationStatus = ref({
-  lastHeard: null,
-  delta: null,
-  lastVoltage: null,
-  lastTemperature: null,
-});
-
 function notify(title, body) {
   return new Notification(title, { body: body, requireInteraction: true });
 }
@@ -73,12 +66,13 @@ const tacticalAndOrCall = computed(() => {
 });
 
 const timedOut = computed(() => {
-  if (!stationStatus.value.lastHeard) {
+  if (stationStatus.value.lastHeard === null) {
     return false;
+  } else {
+    return (
+      props.now.getTime() - stationStatus.value.lastHeard > config.timeoutLength
+    );
   }
-
-  let nowDelta = new Date(props.now.value - stationStatus.value.lastHeard);
-  return nowDelta.getTime() > config.timeoutLength;
 });
 
 const lowVoltage = computed(() => {
@@ -88,32 +82,37 @@ const lowVoltage = computed(() => {
   );
 });
 
-watch(
-  () => props.messages,
-  () => {
-    Object.assign(
-      stationStatus.value,
-      props.messages.reduce((acc, message, idx, arr) => {
-        acc.lastHeard = message.date.getTime();
-        if (idx === 0) {
-          acc.avgDelta = 0;
-        } else {
-          let delta = message.date.getTime() - arr[idx - 1].date.getTime();
-          acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
+const stationStatus = computed(() => {
+  const status = {
+    lastHeard: null,
+    delta: null,
+    lastVoltage: null,
+    lastTemperature: null,
+  };
+
+  Object.assign(
+    status,
+    props.messages.reduce((acc, message, idx, arr) => {
+      acc.lastHeard = message.date.getTime();
+      if (idx === 0) {
+        acc.avgDelta = 0;
+      } else {
+        let delta = message.date.getTime() - arr[idx - 1].date.getTime();
+        acc.avgDelta = (acc.avgDelta * (idx - 1) + delta) / idx;
+      }
+      if ('data' in message) {
+        if ('analog' in message.data) {
+          acc.lastVoltage = message.data.analog[0] / 10;
+          acc.lastTemperature = message.data.analog[1];
         }
-        if ('data' in message) {
-          if ('analog' in message.data) {
-            acc.lastVoltage = message.data.analog[0] / 10;
-            acc.lastTemperature = message.data.analog[1];
-          }
-          acc.lastMicE = message.data.mice || acc.lastMicE;
-          acc.lastComment = message.data.comment || acc.lastComment;
-        }
-        return acc;
-      }, {})
-    );
-  }
-);
+        acc.lastMicE = message.data.mice || acc.lastMicE;
+        acc.lastComment = message.data.comment || acc.lastComment;
+      }
+      return acc;
+    }, {})
+  );
+  return status;
+});
 
 watch(
   () => props.lowVoltage,
