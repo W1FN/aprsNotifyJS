@@ -17,26 +17,23 @@ trackedStations:
   W1FN-10:
   N1GMC-1:
   N1GMC-2:
+  W1FNJ-9:
 
   # Vehicles
-  W1HS-9: Rover SF-1
-  KC1LFU-5: Rover 1-2
-  KC1LFU-1: Rover 2-1
-  KC1LFU-2: Rover 2-3
-  N1EMF-7: Rover 3-4
-  K1DSP-9: Rover 4-5
+  KC1LFU-3: Rover 6-7
+  KC1LFU-11: Trouble 2
+  KC1LFU-4: Rover 2-8
+  KB1JCX-9: Shuttle
+  W1KUA-9: Rover 4-7
+  KC1GDW-4: Rover 3-4
+  N0JSR-9: Recovery
+  N1DOU-9: Rover 2-1
+  KC1LFU-1: Rover 5
+  KC1LFU-2: Rover 5-6
   AB1XQ-9: Rover 5-8
-  N5IEP-1: Rover 5-6
-  KC1BOS-2: Rover 6-7
-  K1EHZ-4: Rover 7-8
-  KC1LFU-6: Rover 2-8
-  KC1LFU-7: Rover 8-2
-  KC1LFU-3: Rover FPL
-  WB1BRE-14: Metric Rover
-  KC1LFU-9: Recovery 1
-  W1LKS-9: Recovery 2
-  WB1BRE-15: Shuttle 1
-  KC1LFU-10: Supply 1
   NA1T-9: Safety 1
+  KC1LFU-14: Metric Rover
+  KC1LFU-13: Rover 8-9
+  KC1GDW-2: Rover 1-8
+  KC1LFU-7: Resupply
   AE1H-9: Trouble 1
-  AE1H-8: Trouble 2
