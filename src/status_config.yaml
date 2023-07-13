@@ -7,34 +7,19 @@ TACTICAL_whitelist:
 
 trackedStations:
   # Digis/iGates
-  W1FN-1:
-  W1FN-3:
-  W1FN-5:
-  W1FN-6:
-  W1FN-7:
-  W1FN-8:
-  W1FN-9:
-  W1FN-10:
-  N1GMC-1:
-  N1GMC-2:
-  W1FNJ-9:
+  W1FN-1: Moose Mt
+  W1FN-5: Hanover
+  W1FN-9: Bath
+  N1GMC-1: Dame Hill Rd, Orford
+  N1GMC-2: Sunday Mt, Orford
+  KB1FDA-1: Corinth
 
   # Vehicles
-  KC1LFU-3: Rover 6-7
-  KC1LFU-11: Trouble 2
-  KC1LFU-4: Rover 2-8
-  KB1JCX-9: Shuttle
-  W1KUA-9: Rover 4-7
-  KC1GDW-4: Rover 3-4
-  N0JSR-9: Recovery
-  N1DOU-9: Rover 2-1
-  KC1LFU-1: Rover 4-5
-  KC1LFU-2: Rover 5-6
-  AB1XQ-9: Rover 5-8
-  NA1T-9: Safety 1
-  KC1LFU-14: Metric Rover
-  KC1LFU-13: Rover 8-9
-  KC1GDW-2: Rover 1-8
-  KC1LFU-7: Resupply
-  AE1H-9: Trouble 1
-  W1HS-9: Rover SF-1
+  K1EHZ-10: Recovery
+  NA1T-9: Ride Manager
+  KC1LFU-1: Logistics Coord.
+  KC1GDW-9: Bike Tech
+  WA1ZCN-11: Trouble
+  KC1LFU-2: Rover 1
+  K1EHZ-4: Rover 2
+  W1TGA-9: Rover 3
