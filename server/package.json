@@ -4,6 +4,6 @@
     "dev": "node ./src/server.js"
   },
   "dependencies": {
-    "ws": "^5.2.3"
+    "ws": "^8.13.0"
   }
 }

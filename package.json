@@ -6,15 +6,15 @@
   "dependencies": {
     "aprs-parser": "github:ad1217/npm-aprs-parser#no-dynamic-require",
     "distinct-colors": "^1.0.4",
-    "ol": "^6.13.0",
-    "vue": "^3.2.31",
-    "vue3-openlayers": "^0.1.63"
+    "ol": "^6.15.1",
+    "vue": "^3.3.4",
+    "vue3-openlayers": "^0.1.75"
   },
   "devDependencies": {
-    "@modyfi/vite-plugin-yaml": "^1.0.1",
-    "@rollup/plugin-yaml": "^3.1.0",
-    "@vitejs/plugin-vue": "^2.2.4",
-    "vite": "^2.8.6"
+    "@modyfi/vite-plugin-yaml": "^1.0.4",
+    "@rollup/plugin-yaml": "^4.1.1",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.4.3"
   },
   "scripts": {
     "start": "pnpm run -r --parallel dev",
