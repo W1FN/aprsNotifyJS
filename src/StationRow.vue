@@ -1,5 +1,5 @@
 <template>
-  <tr :class="{ timedOut, lowVoltage, neverHeard: !stationStatus.lastHeard }">
+  <tr :class="{ timedOut, isLowVoltage, neverHeard: !stationStatus.lastHeard }">
     <td :title="callsign">{{ tacticalAndOrCall }}</td>
     <template v-if="stationStatus.lastHeard">
       <td>{{ formatTime(stationStatus.lastHeard) }}</td>
@@ -24,11 +24,12 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import config from './status_config.yaml';
 
 const props = defineProps({
   callsign: String,
   tactical: String,
+  timeoutLength: Number,
+  lowVoltage: Number,
   messages: Array,
   now: Date,
 });
@@ -70,15 +71,15 @@ const timedOut = computed(() => {
     return false;
   } else {
     return (
-      props.now.getTime() - stationStatus.value.lastHeard > config.timeoutLength
+      props.now.getTime() - stationStatus.value.lastHeard > props.timeoutLength
     );
   }
 });
 
-const lowVoltage = computed(() => {
+const isLowVoltage = computed(() => {
   return (
     stationStatus.value.lastVoltage &&
-    stationStatus.value.lastVoltage < config.lowVoltage
+    stationStatus.value.lastVoltage < props.lowVoltage
   );
 });
 
@@ -114,23 +115,20 @@ const stationStatus = computed(() => {
   return status;
 });
 
-watch(
-  () => props.lowVoltage,
-  (newVal) => {
-    if (newVal) {
-      notify(
-        `${tacticalAndOrCall}'s battery has dropepd below ${config.lowVoltage}V`,
-        `Voltage: ${stationStatus.value.lastVoltage}`
-      );
-    }
+watch(isLowVoltage, (newVal) => {
+  if (newVal) {
+    notify(
+      `${tacticalAndOrCall}'s battery has dropepd below ${props.lowVoltage}V`,
+      `Voltage: ${stationStatus.value.lastVoltage}`
+    );
   }
-);
+});
 
 watch(timedOut, (newVal) => {
   if (newVal) {
     notify(
       `${tacticalAndOrCall.value} has not been heard for over ${prettyDuration(
-        config.timeoutLength
+        props.timeoutLength
       )}!`,
       `Last Heard: ${formatTime(
         stationStatus.value.lastHeard
@@ -147,7 +145,7 @@ tr.timedOut {
   background-color: red;
 }
 
-tr.lowVoltage {
+tr.isLowVoltage {
   background-color: yellow;
 }
 

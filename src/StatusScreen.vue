@@ -25,6 +25,8 @@
         :key="callsign"
         :callsign="callsign"
         :tactical="tactical"
+        :lowVoltage="config.lowVoltage"
+        :timeoutLength="config.timeoutLength"
         :messages="messagesFromStation[callsign] || []"
         :now="now"
       >
