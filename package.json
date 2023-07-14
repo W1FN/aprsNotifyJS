@@ -7,6 +7,7 @@
     "aprs-parser": "github:ad1217/npm-aprs-parser#no-dynamic-require",
     "distinct-colors": "^1.0.4",
     "ol": "^6.15.1",
+    "parse-duration": "^1.1.0",
     "vue": "^3.3.4",
     "vue3-openlayers": "^0.1.75"
   },

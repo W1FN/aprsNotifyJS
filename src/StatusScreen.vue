@@ -26,7 +26,7 @@
         :callsign="callsign"
         :tactical="tactical"
         :lowVoltage="config.lowVoltage"
-        :timeoutLength="config.timeoutLength"
+        :timeoutLength="parseDuration(config.timeoutLength)"
         :messages="messagesFromStation[callsign] || []"
         :now="now"
       >
@@ -38,6 +38,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import APRSParser from 'aprs-parser/lib/APRSParser';
+import parseDuration from 'parse-duration';
 
 import StationRow from './StationRow.vue';
 import config from './status_config.yaml';
