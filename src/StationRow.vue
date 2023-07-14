@@ -30,12 +30,15 @@ const props = defineProps({
   tactical: String,
   timeoutLength: Number,
   lowVoltage: Number,
+  finishedReplay: Boolean,
   messages: Array,
   now: Date,
 });
 
 function notify(title, body) {
-  return new Notification(title, { body: body, requireInteraction: true });
+  if (props.finishedReplay) {
+    return new Notification(title, { body: body, requireInteraction: true });
+  }
 }
 
 function formatTime(time, isDuration = false) {

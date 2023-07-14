@@ -54,5 +54,6 @@ wss.on('connection', (ws) => {
       .split('\n')
       .filter((line) => line !== '')
       .forEach((line) => ws.send(line));
+    ws.send("FINISHED REPLAY");
   }
 });

@@ -27,6 +27,7 @@
         :tactical="tactical"
         :lowVoltage="config.lowVoltage"
         :timeoutLength="parseDuration(config.timeoutLength)"
+        :finishedReplay="finishedReplay"
         :messages="messagesFromStation[callsign] || []"
         :now="now"
       >
@@ -45,6 +46,7 @@ import config from './status_config.yaml';
 
 const parser = new APRSParser();
 let aprsStream = null;
+const finishedReplay = ref(false);
 const messages = ref([]);
 const messagesFromStation = ref({});
 const now = ref(new Date());
@@ -69,7 +71,9 @@ function connectToStream() {
     }, 5000);
   };
   aprsStream.onmessage = (event) => {
-    if (event.data !== '') {
+    if (event.data === 'FINISHED REPLAY') {
+      finishedReplay.value = true;
+    } else if (event.data !== '') {
       handleMessage(JSON.parse(event.data));
     }
   };
