@@ -21,12 +21,10 @@
       </tr>
 
       <StationRow
-        v-for="(tactical, callsign) in trackedStations"
+        v-for="(stationProps, callsign) in trackedStations"
         :key="callsign"
         :callsign="callsign"
-        :tactical="tactical"
-        :lowVoltage="config.lowVoltage"
-        :timeoutLength="parseDuration(config.timeoutLength)"
+        v-bind="{ ...config.default, ...stationProps }"
         :finishedReplay="finishedReplay"
         :messages="messagesFromStation[callsign] || []"
         :now="now"
@@ -39,7 +37,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import APRSParser from 'aprs-parser/lib/APRSParser';
-import parseDuration from 'parse-duration';
 
 import StationRow from './StationRow.vue';
 import config from './status_config.yaml';
@@ -50,8 +47,24 @@ const finishedReplay = ref(false);
 const messages = ref([]);
 const messagesFromStation = ref({});
 const now = ref(new Date());
-const trackedStations = ref(config.trackedStations);
+const trackedStations = ref(normalizeConfigStations());
 const canNotify = ref(Notification.permission === 'granted');
+
+function normalizeConfigStations() {
+  return [...Object.entries(config.trackedStations)]
+    .map(([callsign, tacticalOrProps]) => {
+      if (typeof tacticalOrProps === 'string') {
+        return [callsign, { tactical: tacticalOrProps }];
+      } else {
+        return [callsign, tacticalOrProps];
+      }
+    })
+    .reduce((acc, [callsign, props]) => {
+      console.log(callsign, props);
+      acc[callsign] = props;
+      return acc;
+    }, {});
+}
 
 onMounted(() => {
   // Connect to websocket aprs stream
@@ -103,7 +116,7 @@ function handleMessage(packet) {
     message.data.text.split(';').map((tac_assoc) => {
       let [call, tac] = tac_assoc.split('=', 2);
       if (tac) {
-        trackedStations.value[call] = tac;
+        trackedStations.value[call].tactical = tac;
       } else {
         delete trackedStations.value[call];
       }

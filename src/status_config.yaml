@@ -1,18 +1,31 @@
-timeoutLength: 10 minutes
-lowVoltage: 11.9
-
 TACTICAL_whitelist:
   - KC1GDW-7
   - W1FN
 
+default:
+  timeoutLength: 10 minutes
+  lowVoltage: 11.9
+
 trackedStations:
   # Digis/iGates
-  W1FN-1: Moose Mt
-  W1FN-5: Hanover
-  W1FN-9: Bath
-  N1GMC-1: Dame Hill Rd, Orford
-  N1GMC-2: Sunday Mt, Orford
-  KB1FDA-1: Corinth
+  W1FN-1:
+    tactical: Moose Mt
+    timeoutLength: 25 minutes
+  W1FN-5:
+    tactical: Hanover
+    timeoutLength: 25 minutes
+  W1FN-9:
+    tactical: Bath
+    timeoutLength: 25 minutes
+  N1GMC-1:
+    tactical: Dame Hill Rd, Orford
+    timeoutLength: 25 minutes
+  N1GMC-2:
+    tactical: Sunday Mt, Orford
+    timeoutLength: 25 minutes
+  KB1FDA-1:
+    tactical: Corinth
+    timeoutLength: 25 minutes
 
   # Vehicles
   K1EHZ-10: Recovery

@@ -24,11 +24,12 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import parseDuration from 'parse-duration';
 
 const props = defineProps({
   callsign: String,
   tactical: String,
-  timeoutLength: Number,
+  timeoutLength: String,
   lowVoltage: Number,
   finishedReplay: Boolean,
   messages: Array,
@@ -47,6 +48,10 @@ function formatTime(time, isDuration = false) {
     isDuration ? { timeZone: 'UTC' } : {}
   );
 }
+
+const timeoutLengthMs = computed(() => {
+  return parseDuration(props.timeoutLength);
+});
 
 function prettyDuration(duration) {
   let date = new Date(duration);
@@ -74,7 +79,8 @@ const timedOut = computed(() => {
     return false;
   } else {
     return (
-      props.now.getTime() - stationStatus.value.lastHeard > props.timeoutLength
+      props.now.getTime() - stationStatus.value.lastHeard >
+      timeoutLengthMs.value
     );
   }
 });
@@ -131,12 +137,12 @@ watch(timedOut, (newVal) => {
   if (newVal) {
     notify(
       `${tacticalAndOrCall.value} has not been heard for over ${prettyDuration(
-        props.timeoutLength
+        timeoutLengthMs.value
       )}!`,
       `Last Heard: ${formatTime(
         stationStatus.value.lastHeard
       )} (${prettyDuration(
-        props.now.value - stationStatus.value.lastHeard
+        props.now.getTime() - stationStatus.value.lastHeard
       )} ago!)`
     );
   }
