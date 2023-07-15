@@ -116,6 +116,9 @@ function handleMessage(packet) {
     message.data.text.split(';').map((tac_assoc) => {
       let [call, tac] = tac_assoc.split('=', 2);
       if (tac) {
+        if (!Object.hasOwn(trackedStations.value, call)) {
+          trackedStations.value[call] = {};
+        }
         trackedStations.value[call].tactical = tac;
       } else {
         delete trackedStations.value[call];
