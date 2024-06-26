@@ -94,9 +94,9 @@ import LineString from 'ol/geom/LineString';
 import Style from 'ol/style/Style';
 import Stroke from 'ol/style/Stroke';
 
-import packetLog from '/../IS_packets.txt?raw';
-const routes = Object.values(import.meta.globEager('./gpx/*.gpx')).map(
-  (gpx) => gpx.default
+import packetLog from '../IS_packets.txt?raw';
+const routes = Object.values(
+  import.meta.glob('./gpx/*.gpx', { eager: true, import: 'default' })
 );
 
 const parser = new APRSParser();
