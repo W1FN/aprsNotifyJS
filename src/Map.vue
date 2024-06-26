@@ -6,58 +6,67 @@
   >
     <ol-view :zoom="10" :center="[-72.15, 43.9]" projection="EPSG:4326" />
 
-    <ol-tile-layer>
+    <ol-tile-layer title="Base Map">
       <ol-source-osm />
     </ol-tile-layer>
 
-    <ol-vector-layer v-for="gpxURL in routes" :key="gpxURL">
-      <ol-source-vector :url="gpxURL" :format="new GPX()"> </ol-source-vector>
-      <ol-style>
-        <ol-style-stroke color="hsl(200, 90%, 30%)" :width="5">
-        </ol-style-stroke>
-      </ol-style>
-    </ol-vector-layer>
+    <ol-layer-group title="GPX Routes">
+      <ol-vector-layer v-for="gpxURL in routes" :key="gpxURL" :title="gpxURL">
+        <ol-source-vector :url="gpxURL" :format="new GPX()"> </ol-source-vector>
+        <ol-style>
+          <ol-style-stroke color="hsl(200, 90%, 30%)" :width="5">
+          </ol-style-stroke>
+        </ol-style>
+      </ol-vector-layer>
+    </ol-layer-group>
 
     <!-- Station Paths -->
     <div>
-      <div v-for="(packets, callsign, idx) in stationPaths" :key="callsign">
-        <!--Paths -->
-        <ol-vector-layer render-mode="image">
-          <ol-source-vector>
-            <ol-feature>
-              <ol-geom-line-string
-                :coordinates="packetsToStationPathPoints(packets)"
-              >
-              </ol-geom-line-string>
-            </ol-feature>
-          </ol-source-vector>
-          <ol-style>
-            <ol-style-stroke :color="stationColors[idx].hex()" :width="2">
-            </ol-style-stroke>
-          </ol-style>
-        </ol-vector-layer>
+      <ol-layer-group title="Paths">
+        <div v-for="(packets, callsign, idx) in stationPaths" :key="callsign">
+          <!--Paths -->
+          <ol-vector-layer render-mode="image" :title="callsign">
+            <ol-source-vector>
+              <ol-feature>
+                <ol-geom-line-string
+                  :coordinates="packetsToStationPathPoints(packets)"
+                >
+                </ol-geom-line-string>
+              </ol-feature>
+            </ol-source-vector>
+            <ol-style>
+              <ol-style-stroke :color="stationColors[idx].hex()" :width="2">
+              </ol-style-stroke>
+            </ol-style>
+          </ol-vector-layer>
+        </div>
+      </ol-layer-group>
 
-        <!-- Points -->
-        <ol-vector-layer render-mode="image">
-          <ol-source-vector>
-            <ol-feature>
-              <ol-geom-multi-point
-                :coordinates="packetsToStationPathPoints(packets)"
-              >
-              </ol-geom-multi-point>
-            </ol-feature>
-          </ol-source-vector>
-          <ol-style>
-            <ol-style-circle :radius="3">
-              <ol-style-fill :color="stationColors[idx].hex()"> </ol-style-fill>
-            </ol-style-circle>
-          </ol-style>
-        </ol-vector-layer>
-      </div>
+      <ol-layer-group title="Points">
+        <div v-for="(packets, callsign, idx) in stationPaths" :key="callsign">
+          <!-- Points -->
+          <ol-vector-layer render-mode="image" :title="callsign">
+            <ol-source-vector>
+              <ol-feature>
+                <ol-geom-multi-point
+                  :coordinates="packetsToStationPathPoints(packets)"
+                >
+                </ol-geom-multi-point>
+              </ol-feature>
+            </ol-source-vector>
+            <ol-style>
+              <ol-style-circle :radius="3">
+                <ol-style-fill :color="stationColors[idx].hex()">
+                </ol-style-fill>
+              </ol-style-circle>
+            </ol-style>
+          </ol-vector-layer>
+        </div>
+      </ol-layer-group>
     </div>
 
     <!-- Digipeater locations -->
-    <ol-vector-layer>
+    <ol-vector-layer title="Digipeater Locations">
       <ol-source-vector>
         <ol-feature v-for="(position, callsign) in digiPos" :key="callsign">
           <ol-geom-point :coordinates="position"> </ol-geom-point>
@@ -73,11 +82,13 @@
     </ol-vector-layer>
 
     <!-- Packet Paths -->
-    <ol-vector-layer>
+    <ol-vector-layer title="Packet Paths" :visible="false">
       <ol-source-vector :features="packetPaths"> </ol-source-vector>
       <!-- TODO: fix style -->
       <!-- <ol-style :overrideStyleFunction="packetPathStyleFunc"> </ol-style> -->
     </ol-vector-layer>
+
+    <ol-layerswitcher-control />
   </ol-map>
 </template>
 
@@ -261,56 +272,5 @@ body {
 .map {
   width: 100vw;
   height: 100vh;
-}
-
-.ol-control.layer-toggles {
-  top: 0.5em;
-  right: 0.5em;
-  background-color: rgba(70, 115, 164, 0.7);
-  color: #eee;
-  white-space: nowrap;
-  max-height: calc(100vh - 1em);
-  overflow-y: auto;
-}
-
-.layer-toggles > div {
-  margin: 0.5em;
-  margin-right: 1em;
-}
-
-.ol-control.layer-toggles:hover {
-  background-color: rgba(0, 60, 136, 0.7);
-}
-
-.layer-toggles > div > label {
-  display: block;
-}
-
-.expand {
-  display: none;
-}
-
-.expand + span::before {
-  content: '\25B6';
-}
-
-.expand:checked + span::before {
-  content: '\25BC';
-}
-
-.expand ~ .collapsible-content {
-  display: none;
-}
-
-.expand:checked ~ .collapsible-content {
-  display: block;
-}
-
-.collapsible-content {
-  margin-left: 0.8em;
-}
-
-.collapsible-content > label {
-  display: block;
 }
 </style>
