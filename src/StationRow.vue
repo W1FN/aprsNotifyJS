@@ -36,12 +36,6 @@ const props = defineProps({
   now: Date,
 });
 
-function notify(title, body) {
-  if (props.finishedReplay) {
-    return new Notification(title, { body: body, requireInteraction: true });
-  }
-}
-
 function formatTime(time, isDuration = false) {
   return new Date(time).toLocaleTimeString(
     'en-GB',
@@ -122,30 +116,6 @@ const stationStatus = computed(() => {
     }, {})
   );
   return status;
-});
-
-watch(isLowVoltage, (newVal) => {
-  if (newVal) {
-    notify(
-      `${tacticalAndOrCall}'s battery has dropepd below ${props.lowVoltage}V`,
-      `Voltage: ${stationStatus.value.lastVoltage}`
-    );
-  }
-});
-
-watch(timedOut, (newVal) => {
-  if (newVal) {
-    notify(
-      `${tacticalAndOrCall.value} has not been heard for over ${prettyDuration(
-        timeoutLengthMs.value
-      )}!`,
-      `Last Heard: ${formatTime(
-        stationStatus.value.lastHeard
-      )} (${prettyDuration(
-        props.now.getTime() - stationStatus.value.lastHeard
-      )} ago!)`
-    );
-  }
 });
 </script>
 
